@@ -1,4 +1,4 @@
-module Util where
+module Snake.Utility where
 
 import List
 

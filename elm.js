@@ -5421,11 +5421,13 @@ Elm.Signal.make = function (_elm) {
                                ,forwardTo: forwardTo
                                ,Mailbox: Mailbox};
 };
-Elm.Config = Elm.Config || {};
-Elm.Config.make = function (_elm) {
+Elm.Snake = Elm.Snake || {};
+Elm.Snake.Config = Elm.Snake.Config || {};
+Elm.Snake.Config.make = function (_elm) {
    "use strict";
-   _elm.Config = _elm.Config || {};
-   if (_elm.Config.values) return _elm.Config.values;
+   _elm.Snake = _elm.Snake || {};
+   _elm.Snake.Config = _elm.Snake.Config || {};
+   if (_elm.Snake.Config.values) return _elm.Snake.Config.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
@@ -5437,13 +5439,15 @@ Elm.Config.make = function (_elm) {
    var arenaHeight = 30;
    var arenaWidth = 40;
    var initialLength = 6;
-   return _elm.Config.values = {_op: _op,initialLength: initialLength,arenaWidth: arenaWidth,arenaHeight: arenaHeight};
+   return _elm.Snake.Config.values = {_op: _op,initialLength: initialLength,arenaWidth: arenaWidth,arenaHeight: arenaHeight};
 };
-Elm.Util = Elm.Util || {};
-Elm.Util.make = function (_elm) {
+Elm.Snake = Elm.Snake || {};
+Elm.Snake.Utility = Elm.Snake.Utility || {};
+Elm.Snake.Utility.make = function (_elm) {
    "use strict";
-   _elm.Util = _elm.Util || {};
-   if (_elm.Util.values) return _elm.Util.values;
+   _elm.Snake = _elm.Snake || {};
+   _elm.Snake.Utility = _elm.Snake.Utility || {};
+   if (_elm.Snake.Utility.values) return _elm.Snake.Utility.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
@@ -5457,18 +5461,20 @@ Elm.Util.make = function (_elm) {
       if (_p0.ctor === "Just") {
             return _p0._0;
          } else {
-            return _U.crashCase("Util",{start: {line: 8,column: 9},end: {line: 10,column: 44}},_p0)(crashMsg);
+            return _U.crashCase("Snake.Utility",{start: {line: 8,column: 9},end: {line: 10,column: 44}},_p0)(crashMsg);
          }
    });
    var head = A2(unmaybe,$List.head,"empty list");
    var tail = A2(unmaybe,$List.tail,"empty list");
-   return _elm.Util.values = {_op: _op,unmaybe: unmaybe,head: head,tail: tail};
+   return _elm.Snake.Utility.values = {_op: _op,unmaybe: unmaybe,head: head,tail: tail};
 };
-Elm.Model = Elm.Model || {};
-Elm.Model.make = function (_elm) {
+Elm.Snake = Elm.Snake || {};
+Elm.Snake.Model = Elm.Snake.Model || {};
+Elm.Snake.Model.make = function (_elm) {
    "use strict";
-   _elm.Model = _elm.Model || {};
-   if (_elm.Model.values) return _elm.Model.values;
+   _elm.Snake = _elm.Snake || {};
+   _elm.Snake.Model = _elm.Snake.Model || {};
+   if (_elm.Snake.Model.values) return _elm.Snake.Model.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
@@ -5476,18 +5482,37 @@ Elm.Model.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $Util = Elm.Util.make(_elm);
+   $Snake$Utility = Elm.Snake.Utility.make(_elm);
    var _op = {};
+   var initialBody = F3(function (len,_p0,acc) {
+      initialBody: while (true) {
+         var _p1 = _p0;
+         var _p3 = _p1._1;
+         var _p2 = _p1._0;
+         if (_U.eq(len,0)) return acc; else {
+               var newCell = {x: _p2,y: _p3};
+               var _v1 = len - 1,_v2 = {ctor: "_Tuple2",_0: _p2 + 1,_1: _p3},_v3 = A2($List._op["::"],newCell,acc);
+               len = _v1;
+               _p0 = _v2;
+               acc = _v3;
+               continue initialBody;
+            }
+      }
+   });
    var nextBodyCell = function (snake) {
-      var headCell = $Util.head(snake.body);
-      var _p0 = snake.direction;
-      switch (_p0.ctor)
+      var headCell = $Snake$Utility.head(snake.body);
+      var _p4 = snake.direction;
+      switch (_p4.ctor)
       {case "Up": return _U.update(headCell,{y: headCell.y + 1});
          case "Down": return _U.update(headCell,{y: headCell.y - 1});
          case "Left": return _U.update(headCell,{x: headCell.x - 1});
          default: return _U.update(headCell,{x: headCell.x + 1});}
    };
-   var grow = function (snake) {    var body1 = snake.body;var body2 = A2($List._op["::"],nextBodyCell(snake),body1);return _U.update(snake,{body: body2});};
+   var grow = function (snake) {
+      var body1 = snake.body;
+      var body2 = A2($List._op["::"],nextBodyCell(snake),body1);
+      return _U.update(snake,{length: snake.length + 1,body: body2});
+   };
    var move = function (snake) {
       var body1 = A2($List.take,snake.length - 1,snake.body);
       var body2 = A2($List._op["::"],nextBodyCell(snake),body1);
@@ -5496,14 +5521,19 @@ Elm.Model.make = function (_elm) {
    var Snake = F3(function (a,b,c) {    return {length: a,direction: b,body: c};});
    var Cell = F2(function (a,b) {    return {x: a,y: b};});
    var Right = {ctor: "Right"};
-   var initialSnake = F2(function (len,_p1) {    var _p2 = _p1;return {length: len,direction: Right,body: _U.list([])};});
+   var initialSnake = F2(function (len,_p5) {
+      var _p6 = _p5;
+      var y0 = _p6._1 / 2 | 0;
+      var x0 = _p6._0 / 2 | 0;
+      return {length: len,direction: Right,body: A3(initialBody,len,{ctor: "_Tuple2",_0: x0,_1: y0},_U.list([]))};
+   });
    var Left = {ctor: "Left"};
    var Down = {ctor: "Down"};
    var Up = {ctor: "Up"};
    var turnLeft = function (snake) {
       var newDirection = function () {
-         var _p3 = snake.direction;
-         switch (_p3.ctor)
+         var _p7 = snake.direction;
+         switch (_p7.ctor)
          {case "Up": return Left;
             case "Down": return Right;
             case "Left": return Down;
@@ -5513,8 +5543,8 @@ Elm.Model.make = function (_elm) {
    };
    var turnRight = function (snake) {
       var newDirection = function () {
-         var _p4 = snake.direction;
-         switch (_p4.ctor)
+         var _p8 = snake.direction;
+         switch (_p8.ctor)
          {case "Up": return Right;
             case "Down": return Left;
             case "Left": return Up;
@@ -5522,17 +5552,37 @@ Elm.Model.make = function (_elm) {
       }();
       return _U.update(snake,{direction: newDirection});
    };
-   return _elm.Model.values = {_op: _op
-                              ,Up: Up
-                              ,Down: Down
-                              ,Left: Left
-                              ,Right: Right
-                              ,Cell: Cell
-                              ,Snake: Snake
-                              ,move: move
-                              ,nextBodyCell: nextBodyCell
-                              ,grow: grow
-                              ,turnLeft: turnLeft
-                              ,turnRight: turnRight
-                              ,initialSnake: initialSnake};
+   return _elm.Snake.Model.values = {_op: _op
+                                    ,Up: Up
+                                    ,Down: Down
+                                    ,Left: Left
+                                    ,Right: Right
+                                    ,Cell: Cell
+                                    ,Snake: Snake
+                                    ,move: move
+                                    ,nextBodyCell: nextBodyCell
+                                    ,grow: grow
+                                    ,turnLeft: turnLeft
+                                    ,turnRight: turnRight
+                                    ,initialSnake: initialSnake
+                                    ,initialBody: initialBody};
+};
+Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values) return _elm.Main.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Snake$Model = Elm.Snake.Model.make(_elm);
+   var _op = {};
+   var s = A2($Snake$Model.initialSnake,4,{ctor: "_Tuple2",_0: 10,_1: 10});
+   var main = $Signal.constant($Graphics$Element.show(s));
+   return _elm.Main.values = {_op: _op,s: s,main: main};
 };

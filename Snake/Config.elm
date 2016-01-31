@@ -1,4 +1,4 @@
-module Config where
+module Snake.Config where
 
 initialLength = 6
 arenaWidth = 40

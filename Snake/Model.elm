@@ -1,7 +1,7 @@
-module Model where
+module Snake.Model where
 
-import Config
-import Util
+import Snake.Config
+import Snake.Utility as U
 
 {--- Snake ---}
 
@@ -33,7 +33,7 @@ move snake =
 nextBodyCell : Snake -> Cell
 nextBodyCell snake =
     let
-        headCell = Util.head snake.body
+        headCell = U.head snake.body
     in
         case snake.direction of
             Up -> { headCell | y = headCell.y + 1 }
@@ -107,9 +107,5 @@ initialBody len (x, y) acc =
 
 type alias Size = (Int, Int)
 
-
-{---- Game ----}
-
---isGameOver : Snake -> Arena -> Bool
 
 
