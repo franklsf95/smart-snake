@@ -17,7 +17,7 @@ type alias Snake =
 
 {- Snake movement -}
 
--- The snake moves forward (default action)
+-- The snake moves one step forward (default action)
 move : Snake -> Snake
 move snake =
     let

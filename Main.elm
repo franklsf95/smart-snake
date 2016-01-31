@@ -1,7 +1,8 @@
 module Main where
 
-import Snake.Game as Game
-import Snake.Visual as Visual
+import Snake.Control
+import Snake.Game
+import Snake.Visual
 import Graphics.Element as E
 import Signal
 import Window
@@ -9,4 +10,5 @@ import Window
 {- Main -}
 
 main : Signal E.Element
-main = Signal.constant (Visual.view Game.initialWorld)
+main =
+    Signal.map Snake.Visual.view Snake.Game.worldSignal
