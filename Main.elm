@@ -1,12 +1,12 @@
 module Main where
 
-import Snake.Model
-import Graphics.Element as E exposing (Element)
+import Snake.Game as Game
+import Snake.Visual as Visual
+import Graphics.Element as E
 import Signal
-
-s = Snake.Model.initialSnake 4 (10, 10)
+import Window
 
 {- Main -}
 
-main : Signal Element
-main = Signal.constant (E.show s)
+main : Signal E.Element
+main = Signal.constant (Visual.view Game.initialWorld)

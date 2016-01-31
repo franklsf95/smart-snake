@@ -1,16 +1,13 @@
-module Snake.Model where
+module Snake.Model.Snake where
 
+import Snake.Model.Cell exposing (Cell)
+import Snake.Model.Size exposing (Size)
 import Snake.Config
 import Snake.Utility as U
 
-{--- Snake ---}
+{- Snake -}
 
 type Direction = Up | Down | Left | Right
-
-type alias Cell =
-    { x : Int
-    , y : Int
-    }
 
 type alias Snake =
     { length : Int
@@ -18,7 +15,7 @@ type alias Snake =
     , body : List Cell
     }
 
-{--- Snake movement ---}
+{- Snake movement -}
 
 -- The snake moves forward (default action)
 move : Snake -> Snake
@@ -76,14 +73,14 @@ turnRight snake =
     in
         { snake | direction = newDirection }
 
-{--- Snake constructor ----}
+{- Snake constructor -}
 
 -- Initialize the initial snake on the arena
-initialSnake : Int -> (Int, Int) -> Snake
-initialSnake len (w, h) =
+initialSnake : Int -> Size -> Snake
+initialSnake len size =
     let
-        x0 = w // 2
-        y0 = h // 2
+        x0 = size.w // 2
+        y0 = size.h // 2
     in
         { length = len
         , direction = Right
@@ -100,12 +97,3 @@ initialBody len (x, y) acc =
             newCell = { x = x, y = y }
         in
             initialBody (len - 1) (x + 1, y) (newCell :: acc)
-
-
-
-{---- Arena ----}
-
-type alias Size = (Int, Int)
-
-
-
