@@ -3,6 +3,7 @@ module Snake.Visual where
 import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Snake exposing (Snake)
 import Snake.Model.World exposing (World)
+import Snake.Game exposing (Game)
 import Snake.Utility as U
 import Array exposing (Array)
 import Color
@@ -88,7 +89,18 @@ worldToCompositeElement world =
     in
         loopRow 0 E.empty
 
+{- Game Canvas -}
+
+
 {- Main function -}
 
-view : World -> Element
-view world = worldToCompositeElement world
+view : Game -> Element
+view game =
+    case game.state of
+        Snake.Game.Home ->
+            E.show "Press space bar to start"
+        Snake.Game.Playing ->
+            worldToCompositeElement game.world
+        Snake.Game.Dead ->
+            E.above (worldToCompositeElement game.world) (E.show "DEAD. Press space bar to restart")
+

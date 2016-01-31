@@ -33,8 +33,8 @@ nextBodyCell snake =
         headCell = U.head snake.body
     in
         case snake.direction of
-            Up -> { headCell | y = headCell.y - 1 }
-            Down -> { headCell | y = headCell.y + 1 }
+            Up -> { headCell | y = headCell.y + 1 }
+            Down -> { headCell | y = headCell.y - 1 }
             Left -> { headCell | x = headCell.x - 1 }
             Right -> { headCell | x = headCell.x + 1 }
 
@@ -50,27 +50,15 @@ grow snake =
             , body = body2 }
 
 -- Change direction of the snake
-turnLeft : Snake -> Snake
-turnLeft snake =
-    let
-        newDirection = case snake.direction of
-            Up -> Left
-            Down -> Right
-            Left -> Down
-            Right -> Up
-    in
-        { snake | direction = newDirection }
-
--- Change direction of the snake
-turnRight : Snake -> Snake
-turnRight snake =
-    let
-        newDirection = case snake.direction of
-            Up -> Right
-            Down -> Left
-            Left -> Up
-            Right -> Down
-    in
+turn : Direction -> Snake -> Snake
+turn newDirection snake =
+    if (newDirection == Up && snake.direction == Down)
+        || (newDirection == Down && snake.direction == Up)
+        || (newDirection == Left && snake.direction == Right)
+        || (newDirection == Right && snake.direction == Left)
+        then
+            Debug.log "cannot turn" snake
+    else
         { snake | direction = newDirection }
 
 {- Snake constructor -}

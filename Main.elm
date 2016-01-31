@@ -11,4 +11,4 @@ import Window
 
 main : Signal E.Element
 main =
-    Signal.map Snake.Visual.view Snake.Game.worldSignal
+    Signal.map Snake.Visual.view Snake.Game.gameSignal
