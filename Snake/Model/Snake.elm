@@ -33,8 +33,8 @@ nextBodyCell snake =
         headCell = U.head snake.body
     in
         case snake.direction of
-            Up -> { headCell | y = headCell.y + 1 }
-            Down -> { headCell | y = headCell.y - 1 }
+            Up -> { headCell | y = headCell.y - 1 }
+            Down -> { headCell | y = headCell.y + 1 }
             Left -> { headCell | x = headCell.x - 1 }
             Right -> { headCell | x = headCell.x + 1 }
 

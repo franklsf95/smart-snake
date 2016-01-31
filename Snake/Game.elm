@@ -9,9 +9,9 @@ isGameOver _ = False
 initialWorld : World
 initialWorld =
     let
-        size = { w = 30, h = 20 }
+        size = { w = 20, h = 10 }
     in
         { size = size
-        , snake = initialSnake 4 size
-        , food = { x = 0, y = 0 }
+        , snake = initialSnake 6 size
+        , food = { x = 3, y = 5 }
         }
