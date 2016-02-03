@@ -9,7 +9,7 @@ import Time exposing (Time)
 type Input = Tick | Command Snake.Direction | Next | Nothing
 
 tickSignal : Signal Time
-tickSignal = Time.fps 5
+tickSignal = Time.fps 10
 
 -- Bind a key to an input. Fires when the key is pressed.
 keySignal : Char.KeyCode -> Input -> Signal Input

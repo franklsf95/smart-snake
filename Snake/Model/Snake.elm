@@ -57,7 +57,7 @@ turn newDirection snake =
         || (newDirection == Left && snake.direction == Right)
         || (newDirection == Right && snake.direction == Left)
         then
-            Debug.log "cannot turn" snake
+            snake  -- reject turning
     else
         { snake | direction = newDirection }
 

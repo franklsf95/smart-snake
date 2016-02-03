@@ -91,6 +91,14 @@ worldToCompositeElement world =
 
 {- Game Canvas -}
 
+drawWorld : World -> Element
+drawWorld world =
+    let
+        worldElement = worldToCompositeElement world
+        lengthElement = E.show world.snake.length
+        foodElement = E.show world.food
+    in
+        E.flow E.down [worldElement, lengthElement, foodElement]
 
 {- Main function -}
 
@@ -100,7 +108,7 @@ view game =
         Snake.Game.Home ->
             E.show "Press space bar to start"
         Snake.Game.Playing ->
-            worldToCompositeElement game.world
+            drawWorld game.world
         Snake.Game.Dead ->
-            E.above (worldToCompositeElement game.world) (E.show "DEAD. Press space bar to restart")
+            E.above (drawWorld game.world) (E.show "DEAD. Press space bar to restart")
 

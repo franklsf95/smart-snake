@@ -20,11 +20,11 @@ tail = unmaybefy "empty list" List.tail
 
 set : Int -> Int -> a -> Array (Array a) -> Array (Array a)
 set i j x array =
-    let
-        subArray = case Array.get i array of
-            Nothing -> Debug.crash "index of out bound"
-            Just arr -> arr
-        subArray' = Array.set j x subArray
-        array' = Array.set i subArray' array
-    in
-        array'
+    case Array.get i array of
+        Nothing ->
+            array  -- index out of bound
+        Just subArray ->
+            let
+                subArray' = Array.set j x subArray
+            in
+                Array.set i subArray' array
