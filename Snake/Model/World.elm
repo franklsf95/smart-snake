@@ -16,6 +16,7 @@ type alias World =
     , food : Cell
     , seed : Random.Seed
     , gen : Random.Generator Cell
+    , commandHandled : Bool -- to prevent duplicate commands within one tick
     }
 
 
@@ -27,13 +28,14 @@ initialWorld =
         size = { w = 30, h = 20 }
         seed = Random.initialSeed 42
         gen = Food.randGen size.w size.h
-        newFoodSeed = Random.generate gen seed
+        (newFood, newSeed) = Random.generate gen seed
     in
         { size = size
         , snake = Snake.initialSnake 6 size
-        , food = fst newFoodSeed
-        , seed = snd newFoodSeed
+        , food = newFood
+        , seed = newSeed
         , gen = gen
+        , commandHandled = False
         }
 
 updateWorld : Control.Input -> World -> World
@@ -42,15 +44,21 @@ updateWorld input world =
         Control.Tick ->
             if Snake.nextBodyCell world.snake == world.food then
                 let
-                    newFoodSeed = Random.generate world.gen world.seed
+                    (newFood, newSeed) = Random.generate world.gen world.seed
                 in
                     { world | snake = Snake.grow world.snake
-                            , food = fst newFoodSeed
-                            , seed = snd newFoodSeed }
+                            , food = newFood
+                            , seed = newSeed
+                            , commandHandled = False }
             else
-                { world | snake = Snake.move world.snake }
+                { world | snake = Snake.move world.snake
+                        , commandHandled = False }
         Control.Command dir ->
-            { world | snake = Snake.turn dir world.snake }
+            if world.commandHandled then
+                world
+            else
+                { world | snake = Snake.turn dir world.snake
+                        , commandHandled = True } -- to prevent a second turn
         _ ->
             world
 
