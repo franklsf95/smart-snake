@@ -62,12 +62,18 @@ updateWorld input world =
         _ ->
             world
 
-
 isGameOver : World -> Bool
 isGameOver world =
     let
         head = U.head world.snake.body
+        tail = U.tail world.snake.body
     in
-        head.x < 0 || head.x >= world.size.w
-            || head.y < 0 || head.y >= world.size.h  -- the snake hits the wall
-        || (U.inBody head world.snake.body) -- head hits body
+        head.x < 0
+            || head.x >= world.size.w
+            || head.y < 0
+            || head.y >= world.size.h  -- head hits wall
+            || headHitTail head tail -- head hits body
+
+headHitTail : Cell -> List Cell -> Bool
+headHitTail head tail =
+    List.foldr (\c acc -> acc || c == head) False tail

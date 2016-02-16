@@ -2,8 +2,6 @@ module Snake.Utility where
 
 import Array exposing (Array)
 import List
-import Snake.Model.Cell exposing (Cell)
-
 
 unmaybe : String -> Maybe a -> a
 unmaybe crashMsg mx =
@@ -30,17 +28,3 @@ set i j x array =
                 subArray' = Array.set j x subArray
             in
                 Array.set i subArray' array
-
-inBody : Cell -> List Cell -> Bool
-inBody c cs =
-    let 
-        tl = unmaybe "inBody"(List.tail cs)
-    in
-        case tl of
-            cur :: rest ->
-                if cur.x == c.x && cur.y == c.y then
-                    True
-                else    
-                    inBody c tl
-            _ ->
-                False    
