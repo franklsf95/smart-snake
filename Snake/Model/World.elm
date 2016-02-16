@@ -4,8 +4,9 @@ import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Food as Food
 import Snake.Model.Size exposing (Size)
 import Snake.Model.Snake as Snake exposing (Snake)
+import Snake.AI.Interface as AI
+import Snake.Config as Config
 import Snake.Control as Control
-import Snake.Utility as U
 import Random
 
 {- World definition -}
@@ -17,6 +18,7 @@ type alias World =
     , seed : Random.Seed
     , gen : Random.Generator Cell
     , commandHandled : Bool -- to prevent duplicate commands within one tick
+    , auxiliaryState : AI.AIState -- auxiliary state
     }
 
 
@@ -25,55 +27,16 @@ type alias World =
 initialWorld : World
 initialWorld =
     let
-        size = { w = 30, h = 20 }
+        size = { w = Config.arenaWidth, h = Config.arenaHeight }
         seed = Random.initialSeed 42
         gen = Food.randGen size.w size.h
-        (newFood, newSeed) = Random.generate gen seed
+        (food', seed') = Random.generate gen seed
     in
         { size = size
-        , snake = Snake.initialSnake 6 size
-        , food = newFood
-        , seed = newSeed
+        , snake = Snake.initialSnake Config.initialLength size
+        , food = food'
+        , seed = seed'
         , gen = gen
         , commandHandled = False
+        , auxiliaryState = AI.initialAuxilaryState
         }
-
-updateWorld : Control.Input -> World -> World
-updateWorld input world =
-    case input of
-        Control.Tick ->
-            if Snake.nextBodyCell world.snake == world.food then
-                let
-                    (newFood, newSeed) = Random.generate world.gen world.seed
-                in
-                    { world | snake = Snake.grow world.snake
-                            , food = newFood
-                            , seed = newSeed
-                            , commandHandled = False }
-            else
-                { world | snake = Snake.move world.snake
-                        , commandHandled = False }
-        Control.Command dir ->
-            if world.commandHandled then
-                world
-            else
-                { world | snake = Snake.turn dir world.snake
-                        , commandHandled = True } -- to prevent a second turn
-        _ ->
-            world
-
-isGameOver : World -> Bool
-isGameOver world =
-    let
-        head = U.head world.snake.body
-        tail = U.tail world.snake.body
-    in
-        head.x < 0
-            || head.x >= world.size.w
-            || head.y < 0
-            || head.y >= world.size.h  -- head hits wall
-            || headHitTail head tail -- head hits body
-
-headHitTail : Cell -> List Cell -> Bool
-headHitTail head tail =
-    List.foldr (\c acc -> acc || c == head) False tail
