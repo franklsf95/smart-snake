@@ -102,13 +102,21 @@ drawWorld world =
 
 {- Main function -}
 
-view : Game -> Element
-view game =
+mainView : Game -> Element
+mainView game =
     case game.state of
         Snake.Game.Home ->
-            E.show "Press space bar to start"
-        Snake.Game.Playing ->
+            E.empty
+        _ ->
             drawWorld game.world
+
+outputMessage : Game -> String
+outputMessage game =
+    case game.state of
+        Snake.Game.Home ->
+            "Press space bar to start"
+        Snake.Game.Playing ->
+            ""
         Snake.Game.Dead ->
-            E.above (drawWorld game.world) (E.show "DEAD. Press space bar to restart")
+            "DEAD. Press space bar to restart"
 
