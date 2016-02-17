@@ -11,5 +11,5 @@ type alias AIState =
 
 initialAuxilaryState : AIState
 initialAuxilaryState =
-    { seed = Random.initialSeed 42
+    { seed = Random.initialSeed 3
     }

@@ -21,7 +21,6 @@ type alias World =
     , auxiliaryState : AI.AIState -- auxiliary state
     }
 
-
 {- World -}
 
 initialWorld : World
