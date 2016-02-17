@@ -5,18 +5,21 @@
 </head>
 <body>
 <h1>Hello World</h1>
-<div id="elm-main"></div>
-<div id="elm-message"></div>
+<div id="game-main"></div>
+<div id="game-score"></div>
+<div id="game-message"></div>
 </body>
 
 <script src="./main.js"></script>
 <script>
-    var div = document.getElementById('elm-main');
+    var div = document.getElementById('game-main');
     var snakeApp = Elm.embed(Elm.Snake.Main, div);
 
-    snakeApp.ports.message.subscribe(function(message) {
-        var div = document.getElementById('elm-message');
-        div.innerHTML = message;
+    snakeApp.ports.info.subscribe(function(info) {
+        var div = document.getElementById('game-message');
+        div.innerHTML = info.message;
+        var div = document.getElementById('game-score');
+        div.innerHTML = info.snakeLength;
     });
 </script>
 </html>

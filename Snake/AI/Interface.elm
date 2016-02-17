@@ -1,6 +1,15 @@
+-- AI Drunk
 module Snake.AI.Interface where
 
-type alias AIState = Int
+import Random
+
+{- AI Auxiliary State -}
+
+type alias AIState =
+    { seed : Random.Seed
+    }
 
 initialAuxilaryState : AIState
-initialAuxilaryState = 0
+initialAuxilaryState =
+    { seed = Random.initialSeed 42
+    }

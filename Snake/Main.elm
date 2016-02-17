@@ -10,9 +10,7 @@ import Window
 {- Main -}
 
 main : Signal E.Element
-main = Signal.map Snake.Visual.mainView Snake.Game.gameSignal
+main = Signal.map Snake.Visual.view Snake.Game.gameSignal
 
-port message : Signal String
-port message = Signal.map Snake.Visual.outputMessage Snake.Game.gameSignal
-
---
+port info : Signal Snake.Visual.GameInfo
+port info = Signal.map Snake.Visual.outputInfo Snake.Game.gameSignal

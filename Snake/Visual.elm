@@ -95,28 +95,43 @@ drawWorld : World -> Element
 drawWorld world =
     let
         worldElement = worldToCompositeElement world
-        lengthElement = E.show world.snake.length
         foodElement = E.show world.food
     in
-        E.flow E.down [worldElement, lengthElement, foodElement]
+        E.flow E.down [worldElement, foodElement]
 
-{- Main function -}
+{- Main view function -}
 
-mainView : Game -> Element
-mainView game =
+view : Game -> Element
+view game =
     case game.state of
         Snake.Game.Home ->
             E.empty
         _ ->
             drawWorld game.world
 
-outputMessage : Game -> String
-outputMessage game =
-    case game.state of
-        Snake.Game.Home ->
-            "Press space bar to start"
-        Snake.Game.Playing ->
-            ""
-        Snake.Game.Dead ->
-            "DEAD. Press space bar to restart"
+{- Output game info -}
+
+type alias GameInfo =
+    { message : String
+    , snakeLength : Int
+    , score : Int
+    }
+
+outputInfo : Game -> GameInfo
+outputInfo game =
+    let
+        message =
+            case game.state of
+                Snake.Game.Home ->
+                    "Press space bar to start"
+                Snake.Game.Playing ->
+                    ""
+                Snake.Game.Dead ->
+                    "DEAD. Press space bar to restart"
+        snakeLength = game.world.snake.length
+    in
+        { message = message
+        , snakeLength = snakeLength
+        , score = 0
+        }
 
