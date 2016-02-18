@@ -47,8 +47,6 @@ markSnakeHelper cs i acc =
 
 {- Draw Grid Elements -}
 
-resizeFactor = 20
-
 type alias ElementGrid = Array (Array Element)
 
 worldToElementGrid : World -> ElementGrid
@@ -58,15 +56,17 @@ worldToElementGrid =
 drawElement : ElementMark -> Element
 drawElement mark =
     let
-        side = resizeFactor
+        side = Config.cellSize
         sq = C.square side
+        darken i = (sqrt (toFloat i)) / 8
+        --darken i = (toFloat i) / 20
         form = case mark of
             Empty ->
                 sq |> C.filled Config.colorBackground
             Food ->
                 sq |> C.filled Config.colorFood
             Snake i ->
-                sq |> C.filled (darkenColor (toFloat i / 20) Config.colorBody)
+                sq |> C.filled (darkenColor (darken i) Config.colorBody)
     in
         C.collage side side [form]
 
@@ -127,5 +127,5 @@ outputInfo game =
     in
         { state = toString game.state
         , snakeLength = snakeLength
-        , score = snakeLength
+        , score = game.world.gameScore
         }

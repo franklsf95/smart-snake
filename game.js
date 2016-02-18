@@ -8212,10 +8212,14 @@ Elm.Snake.Config.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var scoreMove = 1;
+   var scoreInitial = 0;
+   var scoreFood = 100;
    var enableAI = true;
    var colorFood = A3($Color.rgb,230,39,57);
    var colorBody = A3($Color.rgb,110,211,207);
    var colorBackground = A3($Color.rgb,62,56,64);
+   var cellSize = 20;
    var arenaHeight = 20;
    var arenaWidth = 30;
    var initialLength = 6;
@@ -8223,10 +8227,14 @@ Elm.Snake.Config.make = function (_elm) {
                                      ,initialLength: initialLength
                                      ,arenaWidth: arenaWidth
                                      ,arenaHeight: arenaHeight
+                                     ,cellSize: cellSize
                                      ,colorBackground: colorBackground
                                      ,colorBody: colorBody
                                      ,colorFood: colorFood
-                                     ,enableAI: enableAI};
+                                     ,enableAI: enableAI
+                                     ,scoreFood: scoreFood
+                                     ,scoreInitial: scoreInitial
+                                     ,scoreMove: scoreMove};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Utility = Elm.Snake.Utility || {};
@@ -8459,9 +8467,10 @@ Elm.Snake.Model.World.make = function (_elm) {
              ,seed: seed$
              ,gen: gen
              ,commandHandled: false
-             ,auxiliaryState: $Snake$AI$Interface.initialAuxilaryState};
+             ,auxiliaryState: $Snake$AI$Interface.initialAuxilaryState
+             ,gameScore: $Snake$Config.scoreInitial};
    }();
-   var World = F7(function (a,b,c,d,e,f,g) {    return {size: a,snake: b,food: c,seed: d,gen: e,commandHandled: f,auxiliaryState: g};});
+   var World = F8(function (a,b,c,d,e,f,g,h) {    return {size: a,snake: b,food: c,seed: d,gen: e,commandHandled: f,auxiliaryState: g,gameScore: h};});
    return _elm.Snake.Model.World.values = {_op: _op,World: World,initialWorld: initialWorld};
 };
 Elm.Snake = Elm.Snake || {};
@@ -8481,6 +8490,7 @@ Elm.Snake.Model.WorldAux.make = function (_elm) {
    $Random = Elm.Random.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Snake$Config = Elm.Snake.Config.make(_elm),
    $Snake$Control = Elm.Snake.Control.make(_elm),
    $Snake$Model$Cell = Elm.Snake.Model.Cell.make(_elm),
    $Snake$Model$Snake = Elm.Snake.Model.Snake.make(_elm),
@@ -8507,11 +8517,14 @@ Elm.Snake.Model.WorldAux.make = function (_elm) {
       var _p1 = input;
       if (_p1.ctor === "Tick") {
             if (_U.eq($Snake$Model$Snake.nextBodyCell(world.snake),world.food)) {
+                  var scoreAdd = $Snake$Config.scoreFood - $Snake$Config.scoreMove;
                   var _p2 = A2($Random.generate,world.gen,world.seed);
                   var food$ = _p2._0;
                   var seed$ = _p2._1;
-                  return _U.update(world,{snake: $Snake$Model$Snake.grow(world.snake),food: food$,seed: seed$,commandHandled: false});
-               } else return _U.update(world,{snake: $Snake$Model$Snake.move(world.snake),commandHandled: false});
+                  return _U.update(world,
+                  {snake: $Snake$Model$Snake.grow(world.snake),food: food$,seed: seed$,commandHandled: false,gameScore: world.gameScore + scoreAdd});
+               } else return _U.update(world,
+               {snake: $Snake$Model$Snake.move(world.snake),commandHandled: false,gameScore: world.gameScore - $Snake$Config.scoreMove});
          } else {
             return A2(handleCommand,input,world);
          }
@@ -8734,7 +8747,7 @@ Elm.Snake.Visual.make = function (_elm) {
    var _op = {};
    var outputInfo = function (game) {
       var snakeLength = game.world.snake.length;
-      return {state: $Basics.toString(game.state),snakeLength: snakeLength,score: snakeLength};
+      return {state: $Basics.toString(game.state),snakeLength: snakeLength,score: game.world.gameScore};
    };
    var GameInfo = F3(function (a,b,c) {    return {state: a,snakeLength: b,score: c};});
    var darkenColor = F2(function (p,color) {
@@ -8742,16 +8755,16 @@ Elm.Snake.Visual.make = function (_elm) {
       var c = $Color.toRgb(color);
       return A3($Color.rgb,f(c.red),f(c.green),f(c.blue));
    });
-   var resizeFactor = 20;
    var drawElement = function (mark) {
-      var side = resizeFactor;
+      var darken = function (i) {    return $Basics.sqrt($Basics.toFloat(i)) / 8;};
+      var side = $Snake$Config.cellSize;
       var sq = $Graphics$Collage.square(side);
       var form = function () {
          var _p0 = mark;
          switch (_p0.ctor)
          {case "Empty": return A2($Graphics$Collage.filled,$Snake$Config.colorBackground,sq);
             case "Food": return A2($Graphics$Collage.filled,$Snake$Config.colorFood,sq);
-            default: return A2($Graphics$Collage.filled,A2(darkenColor,$Basics.toFloat(_p0._0) / 20,$Snake$Config.colorBody),sq);}
+            default: return A2($Graphics$Collage.filled,A2(darkenColor,darken(_p0._0),$Snake$Config.colorBody),sq);}
       }();
       return A3($Graphics$Collage.collage,side,side,_U.list([form]));
    };
@@ -8806,7 +8819,6 @@ Elm.Snake.Visual.make = function (_elm) {
                                      ,markFood: markFood
                                      ,markSnake: markSnake
                                      ,markSnakeHelper: markSnakeHelper
-                                     ,resizeFactor: resizeFactor
                                      ,worldToElementGrid: worldToElementGrid
                                      ,drawElement: drawElement
                                      ,darkenColor: darkenColor

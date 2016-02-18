@@ -19,6 +19,7 @@ type alias World =
     , gen : Random.Generator Cell
     , commandHandled : Bool -- to prevent duplicate commands within one tick
     , auxiliaryState : AI.AIState -- auxiliary state
+    , gameScore : Int
     }
 
 {- World -}
@@ -38,4 +39,5 @@ initialWorld =
         , gen = gen
         , commandHandled = False
         , auxiliaryState = AI.initialAuxilaryState
+        , gameScore = Config.scoreInitial
         }
