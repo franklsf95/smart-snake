@@ -8205,6 +8205,7 @@ Elm.Snake.Config.make = function (_elm) {
    if (_elm.Snake.Config.values) return _elm.Snake.Config.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
@@ -8212,10 +8213,20 @@ Elm.Snake.Config.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var enableAI = true;
+   var colorFood = A3($Color.rgb,230,39,57);
+   var colorBody = A3($Color.rgb,110,211,207);
+   var colorBackground = A3($Color.rgb,62,56,64);
    var arenaHeight = 20;
    var arenaWidth = 30;
    var initialLength = 6;
-   return _elm.Snake.Config.values = {_op: _op,initialLength: initialLength,arenaWidth: arenaWidth,arenaHeight: arenaHeight,enableAI: enableAI};
+   return _elm.Snake.Config.values = {_op: _op
+                                     ,initialLength: initialLength
+                                     ,arenaWidth: arenaWidth
+                                     ,arenaHeight: arenaHeight
+                                     ,colorBackground: colorBackground
+                                     ,colorBody: colorBody
+                                     ,colorFood: colorFood
+                                     ,enableAI: enableAI};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Utility = Elm.Snake.Utility || {};
@@ -8663,7 +8674,6 @@ Elm.Snake.Visual.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Array = Elm.Array.make(_elm),
    $Basics = Elm.Basics.make(_elm),
-   $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
@@ -8671,6 +8681,7 @@ Elm.Snake.Visual.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Snake$Config = Elm.Snake.Config.make(_elm),
    $Snake$Game = Elm.Snake.Game.make(_elm),
    $Snake$Model$Cell = Elm.Snake.Model.Cell.make(_elm),
    $Snake$Model$Snake = Elm.Snake.Model.Snake.make(_elm),
@@ -8689,9 +8700,9 @@ Elm.Snake.Visual.make = function (_elm) {
       var form = function () {
          var _p0 = mark;
          switch (_p0.ctor)
-         {case "Empty": return A2($Graphics$Collage.filled,$Color.black,sq);
-            case "Food": return A2($Graphics$Collage.filled,$Color.white,sq);
-            default: return A2($Graphics$Collage.alpha,$Basics.toFloat(_p0._0) / 10 + 0.2,A2($Graphics$Collage.filled,$Color.yellow,sq));}
+         {case "Empty": return A2($Graphics$Collage.filled,$Snake$Config.colorBackground,sq);
+            case "Food": return A2($Graphics$Collage.filled,$Snake$Config.colorFood,sq);
+            default: return A2($Graphics$Collage.alpha,1 - $Basics.toFloat(_p0._0) / 20,A2($Graphics$Collage.filled,$Snake$Config.colorBody,sq));}
       }();
       return A3($Graphics$Collage.collage,side,side,_U.list([form]));
    };

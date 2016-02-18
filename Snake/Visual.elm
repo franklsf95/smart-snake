@@ -4,9 +4,9 @@ import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Snake exposing (Snake)
 import Snake.Model.World exposing (World)
 import Snake.Game as Game exposing (Game)
+import Snake.Config as Config
 import Snake.Utility as U
 import Array exposing (Array)
-import Color
 import Graphics.Collage as C
 import Graphics.Element as E exposing (Element)
 import Set
@@ -61,12 +61,12 @@ drawElement mark =
         sq = C.square side
         form = case mark of
             Empty ->
-                sq |> C.filled Color.black
+                sq |> C.filled Config.colorBackground
             Food ->
-                sq |> C.filled Color.white
+                sq |> C.filled Config.colorFood
             Snake i ->
-                sq |> C.filled Color.yellow
-                   |> C.alpha (toFloat i / 10 + 0.2)
+                sq |> C.filled Config.colorBody
+                   |> C.alpha (1 - toFloat i / 20)
     in
         C.collage side side [form]
 
