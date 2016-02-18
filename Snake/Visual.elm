@@ -7,6 +7,7 @@ import Snake.Game as Game exposing (Game)
 import Snake.Config as Config
 import Snake.Utility as U
 import Array exposing (Array)
+import Color exposing (Color)
 import Graphics.Collage as C
 import Graphics.Element as E exposing (Element)
 import Set
@@ -65,10 +66,17 @@ drawElement mark =
             Food ->
                 sq |> C.filled Config.colorFood
             Snake i ->
-                sq |> C.filled Config.colorBody
-                   |> C.alpha (1 - toFloat i / 20)
+                sq |> C.filled (darkenColor (toFloat i / 20) Config.colorBody)
     in
         C.collage side side [form]
+
+darkenColor : Float -> Color -> Color
+darkenColor p color =
+    let
+        c = Color.toRgb color
+        f x = round (toFloat x * (1 - p))
+    in
+        Color.rgb (f c.red) (f c.green) (f c.blue)
 
 {- Compose Grid Elements -}
 
