@@ -1,68 +1,23 @@
--- AI Greedy
-module Snake.AI.Main where
+-- AI BrownianMotion
+module AI.Main where
 
-import Snake.Model.Cell exposing (Cell)
-import Snake.Model.Snake as Snake exposing (Snake, Direction (..))
-import Snake.Model.World as World exposing (World)
-import Snake.Model.WorldAux as WorldAux
-import Snake.AI.Interface exposing (AIState)
-import Snake.Control as Control exposing (Input (..))
-import Snake.Utility as U
+import Model.Snake as Snake exposing (Snake, Direction (..))
+import Model.World as World exposing (World)
+import Model.WorldAux as WorldAux
+import AI.Interface exposing (AIState)
+import Control as Control exposing (Input (..))
+import Utility as U
 import Random
 
 -- the main function that evaluates a world and produces the next step
 next : World -> (Input, AIState)
 next world =
     let
-        snake = world.snake
-        cur = snake.direction
-        dirs = relativeDirection world.food (U.head world.snake.body)
-        findValidTurn ds =
-            case ds of
-                [] ->
-                    Nothing
-                d::ds' ->
-                    if Snake.isValidTurn d snake then
-                        Just (Command d)
-                    else
-                        findValidTurn ds'
-        cmd =
-            if List.member cur dirs then
-                -- stay on the current direction
-                Just Null
-            else
-                findValidTurn dirs
-    in
-        case cmd of
-            Nothing ->
-                nextRandom world
-            Just c ->
-                (c, world.auxiliaryState)
-
-relativeDirection : Cell -> Cell -> List Direction
-relativeDirection food head =
-    let
-        f x1 x2 y1 y2 =
-            if x1 < x2 then
-                [y1]
-            else if x1 == x2 then
-                []
-            else
-                [y2]
-    in
-        List.append (f food.x head.x Left Right) (f food.y head.y Down Up)
-
-{- Random Walk -}
-
-nextRandom : World -> (Input, AIState)
-nextRandom world =
-    let
         commands = possibleCommands world.snake
         auxState = world.auxiliaryState
         (cmd, seed') = nextCommand world auxState.seed commands
         auxState' = { auxState
                     | seed = seed' }
-        _ = Debug.log "Random choice" cmd
     in
         (cmd, auxState')
 

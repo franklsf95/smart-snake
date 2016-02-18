@@ -52,14 +52,17 @@ grow snake =
 -- Change direction of the snake
 turn : Direction -> Snake -> Snake
 turn newDirection snake =
-    if (newDirection == Up && snake.direction == Down)
-        || (newDirection == Down && snake.direction == Up)
-        || (newDirection == Left && snake.direction == Right)
-        || (newDirection == Right && snake.direction == Left)
-        then
-            snake  -- reject turning
-    else
+    if isValidTurn newDirection snake then
         { snake | direction = newDirection }
+    else
+        snake  -- reject turning
+
+isValidTurn : Direction -> Snake -> Bool
+isValidTurn newDirection snake =
+    (newDirection == Up && snake.direction /= Down)
+        || (newDirection == Down && snake.direction /= Up)
+        || (newDirection == Left && snake.direction /= Right)
+        || (newDirection == Right && snake.direction /= Left)
 
 {- Snake constructor -}
 

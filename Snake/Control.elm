@@ -6,7 +6,7 @@ import Keyboard
 import Signal
 import Time exposing (Time)
 
-type Input = Tick | Command Snake.Direction | Next | Nothing
+type Input = Tick | Command Snake.Direction | Next | Null
 
 tickSignal : Signal Time
 tickSignal = Time.fps 20

@@ -8337,10 +8337,11 @@ Elm.Snake.Model.Snake.make = function (_elm) {
    var Left = {ctor: "Left"};
    var Down = {ctor: "Down"};
    var Up = {ctor: "Up"};
-   var turn = F2(function (newDirection,snake) {
-      return _U.eq(newDirection,Up) && _U.eq(snake.direction,Down) || (_U.eq(newDirection,Down) && _U.eq(snake.direction,Up) || (_U.eq(newDirection,
-      Left) && _U.eq(snake.direction,Right) || _U.eq(newDirection,Right) && _U.eq(snake.direction,Left))) ? snake : _U.update(snake,{direction: newDirection});
+   var isValidTurn = F2(function (newDirection,snake) {
+      return _U.eq(newDirection,Up) && !_U.eq(snake.direction,Down) || (_U.eq(newDirection,Down) && !_U.eq(snake.direction,Up) || (_U.eq(newDirection,
+      Left) && !_U.eq(snake.direction,Right) || _U.eq(newDirection,Right) && !_U.eq(snake.direction,Left)));
    });
+   var turn = F2(function (newDirection,snake) {    return A2(isValidTurn,newDirection,snake) ? _U.update(snake,{direction: newDirection}) : snake;});
    return _elm.Snake.Model.Snake.values = {_op: _op
                                           ,Up: Up
                                           ,Down: Down
@@ -8351,6 +8352,7 @@ Elm.Snake.Model.Snake.make = function (_elm) {
                                           ,nextBodyCell: nextBodyCell
                                           ,grow: grow
                                           ,turn: turn
+                                          ,isValidTurn: isValidTurn
                                           ,initialSnake: initialSnake
                                           ,initialBody: initialBody};
 };
@@ -8401,7 +8403,7 @@ Elm.Snake.Control.make = function (_elm) {
       return A2($Signal.map,function (_p0) {    return input;},A3($Signal.filter,$Basics.identity,false,$Keyboard.isDown(key)));
    });
    var tickSignal = $Time.fps(20);
-   var Nothing = {ctor: "Nothing"};
+   var Null = {ctor: "Null"};
    var Next = {ctor: "Next"};
    var Command = function (a) {    return {ctor: "Command",_0: a};};
    var Tick = {ctor: "Tick"};
@@ -8415,7 +8417,7 @@ Elm.Snake.Control.make = function (_elm) {
                                       ,Tick: Tick
                                       ,Command: Command
                                       ,Next: Next
-                                      ,Nothing: Nothing
+                                      ,Null: Null
                                       ,tickSignal: tickSignal
                                       ,keySignal: keySignal
                                       ,inputSignal: inputSignal};
@@ -8535,6 +8537,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Snake$AI$Interface = Elm.Snake.AI.Interface.make(_elm),
    $Snake$Control = Elm.Snake.Control.make(_elm),
+   $Snake$Model$Cell = Elm.Snake.Model.Cell.make(_elm),
    $Snake$Model$Snake = Elm.Snake.Model.Snake.make(_elm),
    $Snake$Model$World = Elm.Snake.Model.World.make(_elm),
    $Snake$Model$WorldAux = Elm.Snake.Model.WorldAux.make(_elm),
@@ -8550,7 +8553,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
       nextCommand: while (true) {
          var _p0 = commands;
          if (_p0.ctor === "[]") {
-               return _U.crashCase("Snake.AI.Main",{start: {line: 38,column: 5},end: {line: 53,column: 33}},_p0)("no possible command");
+               return _U.crashCase("Snake.AI.Main",{start: {line: 83,column: 5},end: {line: 98,column: 33}},_p0)("no possible command");
             } else {
                if (_p0._1.ctor === "[]") {
                      return {ctor: "_Tuple2",_0: _p0._0,_1: seed};
@@ -8574,23 +8577,63 @@ Elm.Snake.AI.Main.make = function (_elm) {
       }
    });
    var possibleCommands = function (snake) {
-      var base = _U.list([$Snake$Control.Nothing,$Snake$Control.Nothing]);
+      var base = _U.list([$Snake$Control.Null,$Snake$Control.Null]);
       return _U.eq(snake.direction,$Snake$Model$Snake.Up) || _U.eq(snake.direction,$Snake$Model$Snake.Down) ? A2($List.append,
       base,
       _U.list([$Snake$Control.Command($Snake$Model$Snake.Left),$Snake$Control.Command($Snake$Model$Snake.Right)])) : A2($List.append,
       base,
       _U.list([$Snake$Control.Command($Snake$Model$Snake.Up),$Snake$Control.Command($Snake$Model$Snake.Down)]));
    };
-   var next = function (world) {
+   var nextRandom = function (world) {
       var auxState = world.auxiliaryState;
       var commands = possibleCommands(world.snake);
       var _p4 = A3(nextCommand,world,auxState.seed,commands);
       var cmd = _p4._0;
       var seed$ = _p4._1;
       var auxState$ = _U.update(auxState,{seed: seed$});
+      var _p5 = A2($Debug.log,"Random choice",cmd);
       return {ctor: "_Tuple2",_0: cmd,_1: auxState$};
    };
-   return _elm.Snake.AI.Main.values = {_op: _op,next: next,possibleCommands: possibleCommands,nextCommand: nextCommand,willDie: willDie};
+   var relativeDirection = F2(function (food,head) {
+      var f = F4(function (x1,x2,y1,y2) {    return _U.cmp(x1,x2) < 0 ? _U.list([y1]) : _U.eq(x1,x2) ? _U.list([]) : _U.list([y2]);});
+      return A2($List.append,
+      A4(f,food.x,head.x,$Snake$Model$Snake.Left,$Snake$Model$Snake.Right),
+      A4(f,food.y,head.y,$Snake$Model$Snake.Down,$Snake$Model$Snake.Up));
+   });
+   var next = function (world) {
+      var dirs = A2(relativeDirection,world.food,$Snake$Utility.head(world.snake.body));
+      var snake = world.snake;
+      var cur = snake.direction;
+      var findValidTurn = function (ds) {
+         findValidTurn: while (true) {
+            var _p6 = ds;
+            if (_p6.ctor === "[]") {
+                  return $Maybe.Nothing;
+               } else {
+                  var _p7 = _p6._0;
+                  if (A2($Snake$Model$Snake.isValidTurn,_p7,snake)) return $Maybe.Just($Snake$Control.Command(_p7)); else {
+                        var _v5 = _p6._1;
+                        ds = _v5;
+                        continue findValidTurn;
+                     }
+               }
+         }
+      };
+      var cmd = A2($List.member,cur,dirs) ? $Maybe.Just($Snake$Control.Null) : findValidTurn(dirs);
+      var _p8 = cmd;
+      if (_p8.ctor === "Nothing") {
+            return nextRandom(world);
+         } else {
+            return {ctor: "_Tuple2",_0: _p8._0,_1: world.auxiliaryState};
+         }
+   };
+   return _elm.Snake.AI.Main.values = {_op: _op
+                                      ,next: next
+                                      ,relativeDirection: relativeDirection
+                                      ,nextRandom: nextRandom
+                                      ,possibleCommands: possibleCommands
+                                      ,nextCommand: nextCommand
+                                      ,willDie: willDie};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Game = Elm.Snake.Game || {};
@@ -8617,7 +8660,7 @@ Elm.Snake.Game.make = function (_elm) {
             var _p0 = $Snake$AI$Main.next(world);
             var input = _p0._0;
             var state$ = _p0._1;
-            var _p1 = A2($Debug.log,"AI",input);
+            var _p1 = !_U.eq(input,$Snake$Control.Null) ? A2($Debug.log,"AI",input) : input;
             var world$ = _U.update(world,{auxiliaryState: state$});
             return A2($Snake$Model$WorldAux.handleCommand,input,world$);
          } else return world;
@@ -8674,6 +8717,7 @@ Elm.Snake.Visual.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Array = Elm.Array.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
@@ -8693,6 +8737,11 @@ Elm.Snake.Visual.make = function (_elm) {
       return {state: $Basics.toString(game.state),snakeLength: snakeLength,score: snakeLength};
    };
    var GameInfo = F3(function (a,b,c) {    return {state: a,snakeLength: b,score: c};});
+   var darkenColor = F2(function (p,color) {
+      var f = function (x) {    return $Basics.round($Basics.toFloat(x) * (1 - p));};
+      var c = $Color.toRgb(color);
+      return A3($Color.rgb,f(c.red),f(c.green),f(c.blue));
+   });
    var resizeFactor = 20;
    var drawElement = function (mark) {
       var side = resizeFactor;
@@ -8702,7 +8751,7 @@ Elm.Snake.Visual.make = function (_elm) {
          switch (_p0.ctor)
          {case "Empty": return A2($Graphics$Collage.filled,$Snake$Config.colorBackground,sq);
             case "Food": return A2($Graphics$Collage.filled,$Snake$Config.colorFood,sq);
-            default: return A2($Graphics$Collage.alpha,1 - $Basics.toFloat(_p0._0) / 20,A2($Graphics$Collage.filled,$Snake$Config.colorBody,sq));}
+            default: return A2($Graphics$Collage.filled,A2(darkenColor,$Basics.toFloat(_p0._0) / 20,$Snake$Config.colorBody),sq);}
       }();
       return A3($Graphics$Collage.collage,side,side,_U.list([form]));
    };
@@ -8760,6 +8809,7 @@ Elm.Snake.Visual.make = function (_elm) {
                                      ,resizeFactor: resizeFactor
                                      ,worldToElementGrid: worldToElementGrid
                                      ,drawElement: drawElement
+                                     ,darkenColor: darkenColor
                                      ,worldToCompositeElement: worldToCompositeElement
                                      ,drawWorld: drawWorld
                                      ,view: view

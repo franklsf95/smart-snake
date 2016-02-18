@@ -1,4 +1,4 @@
--- AI Greedy
+-- AI BrownianMotion
 module Snake.AI.Interface where
 
 import Random

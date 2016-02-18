@@ -47,7 +47,7 @@ runAI world =
     if Config.enableAI then
         let
             (input, state') = AIMain.next world
-            _ = Debug.log "AI" input
+            _ = if input /= Control.Null then Debug.log "AI" input else input
             world' = { world | auxiliaryState = state' }
         in
             WorldAux.handleCommand input world'
