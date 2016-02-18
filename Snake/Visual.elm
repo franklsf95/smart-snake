@@ -3,7 +3,7 @@ module Snake.Visual where
 import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Snake exposing (Snake)
 import Snake.Model.World exposing (World)
-import Snake.Game exposing (Game)
+import Snake.Game as Game exposing (Game)
 import Snake.Utility as U
 import Array exposing (Array)
 import Color
@@ -95,25 +95,19 @@ drawWorld : World -> Element
 drawWorld world =
     let
         worldElement = worldToCompositeElement world
-        foodElement = E.show world.food
-        snakeElement = E.show world.snake
     in
-        E.flow E.down [worldElement, foodElement, snakeElement]
+        worldElement
+        --E.flow E.down [worldElement, foodElement, snakeElement]
 
 {- Main view function -}
 
 view : Game -> Element
-view game =
-    case game.state of
-        Snake.Game.Home ->
-            E.empty
-        _ ->
-            drawWorld game.world
+view game = drawWorld game.world
 
 {- Output game info -}
 
 type alias GameInfo =
-    { message : String
+    { state : String
     , snakeLength : Int
     , score : Int
     }
@@ -121,18 +115,9 @@ type alias GameInfo =
 outputInfo : Game -> GameInfo
 outputInfo game =
     let
-        message =
-            case game.state of
-                Snake.Game.Home ->
-                    "Press space bar to start"
-                Snake.Game.Playing ->
-                    ""
-                Snake.Game.Dead ->
-                    "DEAD. Press space bar to restart"
         snakeLength = game.world.snake.length
     in
-        { message = message
+        { state = toString game.state
         , snakeLength = snakeLength
-        , score = 0
+        , score = snakeLength
         }
-

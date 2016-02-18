@@ -12,5 +12,5 @@ import Window
 main : Signal E.Element
 main = Signal.map Snake.Visual.view Snake.Game.gameSignal
 
---port info : Signal Snake.Visual.GameInfo
---port info = Signal.map Snake.Visual.outputInfo Snake.Game.gameSignal
+port info : Signal Snake.Visual.GameInfo
+port info = Signal.map Snake.Visual.outputInfo Snake.Game.gameSignal

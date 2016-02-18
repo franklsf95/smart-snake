@@ -2,10 +2,10 @@
 
 all: run
 
-main.js: $(shell find Snake -type f)
-	elm-make ./Snake/Main.elm --output=./main.js
+game.js: $(shell find Snake -type f)
+	elm-make ./Snake/Main.elm --output=./game.js
 
-run: main.js
+run: game.js
 	open ./index.html
 
 clean:

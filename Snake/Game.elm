@@ -9,7 +9,7 @@ import Signal
 
 {- Game -}
 
-type GameState = Home | Playing | Dead
+type GameState = Start | Playing | Dead
 
 type alias Game =
     { world : World
@@ -19,7 +19,7 @@ type alias Game =
 initialGame : Game
 initialGame =
     { world = World.initialWorld
-    , state = Home
+    , state = Start
     }
 
 updateGame : Control.Input -> Game -> Game
@@ -35,10 +35,10 @@ updateGame input game =
                 { world = world'
                 , state = state'
                 }
-        (Control.Next, Home) ->
+        (Control.Next, Start) ->
             { world = World.initialWorld, state = Playing }
         (Control.Next, Dead) ->
-            { game | state = Home }
+            { game | state = Start }
         _ ->
             game
 

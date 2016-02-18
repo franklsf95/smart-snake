@@ -1,25 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Hello</title>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<link href="assets/css/app.css" rel="stylesheet">
+<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+
+<title>Smart Snake</title>
+
 </head>
+
 <body>
-<h1>Hello World</h1>
-<div id="game-main"></div>
-<div id="game-score"></div>
-<div id="game-message"></div>
+
+<div class="game-wrapper">
+
+  <h1>Smart Snake</h1>
+
+  <div class="game-main"></div>
+  <div class="score-wrapper left">
+    Score:
+    <span id="game-score"></span>
+  </div>
+  <div class="score-wrapper right">
+    Snake Length:
+    <span id="game-snake-length"></span>
+  </div>
+  <div class="spacer"></div>
+  <div class="message-wrapper">
+    <span id="game-message"></span>
+  </div>
+
+</div>
+
+<script src="game.js"></script>
+<script src="assets/js/app.js"></script>
+
 </body>
-
-<script src="./main.js"></script>
-<script>
-    var div = document.getElementById('game-main');
-    var snakeApp = Elm.embed(Elm.Snake.Main, div);
-
-    snakeApp.ports.info.subscribe(function(info) {
-        var div = document.getElementById('game-message');
-        div.innerHTML = info.message;
-        var div = document.getElementById('game-score');
-        div.innerHTML = info.snakeLength;
-    });
-</script>
 </html>
