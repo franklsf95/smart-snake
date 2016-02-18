@@ -14,12 +14,14 @@ type GameState = Start | Playing | Dead
 type alias Game =
     { world : World
     , state : GameState
+    , aiMessage : String
     }
 
 initialGame : Game
 initialGame =
     { world = World.initialWorld
     , state = Start
+    , aiMessage = ""
     }
 
 updateGame : Control.Input -> Game -> Game
@@ -27,32 +29,36 @@ updateGame input game =
     case (input, game.state) of
         (_, Playing) ->
             let
-                world = runAI game.world
-                world' = WorldAux.updateWorld input world
-                gameOver = WorldAux.isGameOver world'
+                (world', aiMessage) = runAI game.world
+                world'' = WorldAux.updateWorld input world'
+                gameOver = WorldAux.isGameOver world''
                 state' = if gameOver then Dead else Playing
             in
-                { world = world'
+                { world = world''
                 , state = state'
+                , aiMessage = aiMessage
                 }
         (Control.Next, Start) ->
-            { world = World.initialWorld, state = Playing }
+            { game
+                | world = World.initialWorld
+                , state = Playing
+            }
         (Control.Next, Dead) ->
             { game | state = Start }
         _ ->
             game
 
-runAI : World -> World
+runAI : World -> (World, String)
 runAI world =
     if Config.enableAI then
         let
             (input, state') = AIMain.next world
-            _ = if input /= Control.Null then Debug.log "AI" input else input
+            message = if input /= Control.Null then toString input else ""
             world' = { world | auxiliaryState = state' }
         in
-            WorldAux.handleCommand input world'
+            (WorldAux.handleCommand input world', message)
     else
-        world
+        (world, "")
 
 {- Output Game Signal -}
 

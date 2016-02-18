@@ -11,23 +11,30 @@ import Snake.Utility as U
 import Random
 
 -- the main function that evaluates a world and produces the next step
+{-
+    The basic idea is:
+    1. Determine the correct directions to the food
+    2. Choose one that is valid and will not result in death
+    3. If nothing is chosen, do random walk (that will not result in death)
+-}
 next : World -> (Input, AIState)
 next world =
     let
         snake = world.snake
         cur = snake.direction
         dirs = relativeDirection world.food (U.head world.snake.body)
+        willNotDie d = not (willDie (Command d) world)
         findValidTurn ds =
             case ds of
                 [] ->
                     Nothing
                 d::ds' ->
-                    if Snake.isValidTurn d snake then
+                    if Snake.isValidTurn d snake && willNotDie d then
                         Just (Command d)
                     else
                         findValidTurn ds'
         cmd =
-            if List.member cur dirs then
+            if List.member cur dirs && willNotDie cur then
                 -- stay on the current direction
                 Just Null
             else

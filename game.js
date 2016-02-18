@@ -8566,7 +8566,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
       nextCommand: while (true) {
          var _p0 = commands;
          if (_p0.ctor === "[]") {
-               return _U.crashCase("Snake.AI.Main",{start: {line: 83,column: 5},end: {line: 98,column: 33}},_p0)("no possible command");
+               return _U.crashCase("Snake.AI.Main",{start: {line: 90,column: 5},end: {line: 105,column: 33}},_p0)("no possible command");
             } else {
                if (_p0._1.ctor === "[]") {
                      return {ctor: "_Tuple2",_0: _p0._0,_1: seed};
@@ -8614,6 +8614,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
       A4(f,food.y,head.y,$Snake$Model$Snake.Down,$Snake$Model$Snake.Up));
    });
    var next = function (world) {
+      var willNotDie = function (d) {    return $Basics.not(A2(willDie,$Snake$Control.Command(d),world));};
       var dirs = A2(relativeDirection,world.food,$Snake$Utility.head(world.snake.body));
       var snake = world.snake;
       var cur = snake.direction;
@@ -8624,7 +8625,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
                   return $Maybe.Nothing;
                } else {
                   var _p7 = _p6._0;
-                  if (A2($Snake$Model$Snake.isValidTurn,_p7,snake)) return $Maybe.Just($Snake$Control.Command(_p7)); else {
+                  if (A2($Snake$Model$Snake.isValidTurn,_p7,snake) && willNotDie(_p7)) return $Maybe.Just($Snake$Control.Command(_p7)); else {
                         var _v5 = _p6._1;
                         ds = _v5;
                         continue findValidTurn;
@@ -8632,7 +8633,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
                }
          }
       };
-      var cmd = A2($List.member,cur,dirs) ? $Maybe.Just($Snake$Control.Null) : findValidTurn(dirs);
+      var cmd = A2($List.member,cur,dirs) && willNotDie(cur) ? $Maybe.Just($Snake$Control.Null) : findValidTurn(dirs);
       var _p8 = cmd;
       if (_p8.ctor === "Nothing") {
             return nextRandom(world);
@@ -8673,32 +8674,34 @@ Elm.Snake.Game.make = function (_elm) {
             var _p0 = $Snake$AI$Main.next(world);
             var input = _p0._0;
             var state$ = _p0._1;
-            var _p1 = !_U.eq(input,$Snake$Control.Null) ? A2($Debug.log,"AI",input) : input;
+            var message = !_U.eq(input,$Snake$Control.Null) ? $Basics.toString(input) : "";
             var world$ = _U.update(world,{auxiliaryState: state$});
-            return A2($Snake$Model$WorldAux.handleCommand,input,world$);
-         } else return world;
+            return {ctor: "_Tuple2",_0: A2($Snake$Model$WorldAux.handleCommand,input,world$),_1: message};
+         } else return {ctor: "_Tuple2",_0: world,_1: ""};
    };
-   var Game = F2(function (a,b) {    return {world: a,state: b};});
+   var Game = F3(function (a,b,c) {    return {world: a,state: b,aiMessage: c};});
    var Dead = {ctor: "Dead"};
    var Playing = {ctor: "Playing"};
    var Start = {ctor: "Start"};
-   var initialGame = {world: $Snake$Model$World.initialWorld,state: Start};
+   var initialGame = {world: $Snake$Model$World.initialWorld,state: Start,aiMessage: ""};
    var updateGame = F2(function (input,game) {
-      var _p2 = {ctor: "_Tuple2",_0: input,_1: game.state};
+      var _p1 = {ctor: "_Tuple2",_0: input,_1: game.state};
       _v0_3: do {
-         if (_p2.ctor === "_Tuple2") {
-               switch (_p2._1.ctor)
-               {case "Playing": var world = runAI(game.world);
-                    var world$ = A2($Snake$Model$WorldAux.updateWorld,input,world);
-                    var gameOver = $Snake$Model$WorldAux.isGameOver(world$);
+         if (_p1.ctor === "_Tuple2") {
+               switch (_p1._1.ctor)
+               {case "Playing": var _p2 = runAI(game.world);
+                    var world$ = _p2._0;
+                    var aiMessage = _p2._1;
+                    var world$$ = A2($Snake$Model$WorldAux.updateWorld,input,world$);
+                    var gameOver = $Snake$Model$WorldAux.isGameOver(world$$);
                     var state$ = gameOver ? Dead : Playing;
-                    return {world: world$,state: state$};
-                  case "Start": if (_p2._0.ctor === "Next") {
-                          return {world: $Snake$Model$World.initialWorld,state: Playing};
+                    return {world: world$$,state: state$,aiMessage: aiMessage};
+                  case "Start": if (_p1._0.ctor === "Next") {
+                          return _U.update(game,{world: $Snake$Model$World.initialWorld,state: Playing});
                        } else {
                           break _v0_3;
                        }
-                  default: if (_p2._0.ctor === "Next") {
+                  default: if (_p1._0.ctor === "Next") {
                           return _U.update(game,{state: Start});
                        } else {
                           break _v0_3;
@@ -8747,9 +8750,9 @@ Elm.Snake.Visual.make = function (_elm) {
    var _op = {};
    var outputInfo = function (game) {
       var snakeLength = game.world.snake.length;
-      return {state: $Basics.toString(game.state),snakeLength: snakeLength,score: game.world.gameScore};
+      return {state: $Basics.toString(game.state),snakeLength: snakeLength,score: game.world.gameScore,aiMessage: game.aiMessage};
    };
-   var GameInfo = F3(function (a,b,c) {    return {state: a,snakeLength: b,score: c};});
+   var GameInfo = F4(function (a,b,c,d) {    return {state: a,snakeLength: b,score: c,aiMessage: d};});
    var darkenColor = F2(function (p,color) {
       var f = function (x) {    return $Basics.round($Basics.toFloat(x) * (1 - p));};
       var c = $Color.toRgb(color);
@@ -8848,7 +8851,7 @@ Elm.Snake.Main.make = function (_elm) {
    var _op = {};
    var info = Elm.Native.Port.make(_elm).outboundSignal("info",
    function (v) {
-      return {state: v.state,snakeLength: v.snakeLength,score: v.score};
+      return {state: v.state,snakeLength: v.snakeLength,score: v.score,aiMessage: v.aiMessage};
    },
    A2($Signal.map,$Snake$Visual.outputInfo,$Snake$Game.gameSignal));
    var main = A2($Signal.map,$Snake$Visual.view,$Snake$Game.gameSignal);

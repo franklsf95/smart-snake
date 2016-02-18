@@ -16,4 +16,5 @@ snakeApp.ports.info.subscribe(function(info) {
         message = "YOU ARE DEAD. Press SPACE to restart."
     }
     document.getElementById('game-message').innerHTML = message;
+    document.getElementById('game-ai-message').innerHTML = info.aiMessage;
 });

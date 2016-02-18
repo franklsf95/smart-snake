@@ -118,6 +118,7 @@ type alias GameInfo =
     { state : String
     , snakeLength : Int
     , score : Int
+    , aiMessage : String
     }
 
 outputInfo : Game -> GameInfo
@@ -128,4 +129,5 @@ outputInfo game =
         { state = toString game.state
         , snakeLength = snakeLength
         , score = game.world.gameScore
+        , aiMessage = game.aiMessage
         }
