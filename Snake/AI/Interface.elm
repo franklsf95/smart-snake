@@ -1,4 +1,4 @@
--- AI Drunk
+-- AI BrownianMotion
 module Snake.AI.Interface where
 
 import Random
@@ -11,5 +11,5 @@ type alias AIState =
 
 initialAuxilaryState : AIState
 initialAuxilaryState =
-    { seed = Random.initialSeed 3
+    { seed = Random.initialSeed 42
     }

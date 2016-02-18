@@ -96,8 +96,9 @@ drawWorld world =
     let
         worldElement = worldToCompositeElement world
         foodElement = E.show world.food
+        snakeElement = E.show world.snake
     in
-        E.flow E.down [worldElement, foodElement]
+        E.flow E.down [worldElement, foodElement, snakeElement]
 
 {- Main view function -}
 

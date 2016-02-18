@@ -28,3 +28,14 @@ set i j x array =
                 subArray' = Array.set j x subArray
             in
                 Array.set i subArray' array
+
+-- picks the n-th element from a list and return the rest
+nthAndRest : Int -> List a -> (a, List a)
+nthAndRest n xs =
+    let
+        before = List.take n xs
+        after = List.drop n xs
+        x = head after
+        after' = tail after
+    in
+        (x, List.append before after')
