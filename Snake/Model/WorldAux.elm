@@ -17,18 +17,16 @@ updateWorld input world =
         Control.Tick ->
             if Snake.nextBodyCell world.snake == world.food then
                 let
-                    (food', seed') = Random.generate world.gen world.seed
-                    scoreAdd = Config.scoreFood - Config.scoreMove
+                    world' = genFood world
+                    scoreAdd = Config.scoreFood + Config.scoreMove
                 in
-                    { world | snake = Snake.grow world.snake
-                            , food = food'
-                            , seed = seed'
-                            , commandHandled = False
-                            , gameScore = world.gameScore + scoreAdd }
+                    { world' | snake = Snake.grow world.snake
+                             , commandHandled = False
+                             , gameScore = world.gameScore + scoreAdd }
             else
                 { world | snake = Snake.move world.snake
                         , commandHandled = False
-                        , gameScore = world.gameScore - Config.scoreMove }
+                        , gameScore = world.gameScore + Config.scoreMove }
         _ ->
             handleCommand input world
 
@@ -54,8 +52,22 @@ isGameOver world =
             || head.x >= world.size.w
             || head.y < 0
             || head.y >= world.size.h  -- head hits wall
-            || headHitTail head tail -- head hits body
+            || cellInCells head tail -- head hits body
 
-headHitTail : Cell -> List Cell -> Bool
-headHitTail head tail =
+cellInCells : Cell -> List Cell -> Bool
+cellInCells head tail =
     List.foldr (\c acc -> acc || c == head) False tail
+
+genFood : World -> World
+genFood world =
+    let
+        (food', seed') = Random.generate world.gen world.seed
+        world' = { world
+                    | food = food'
+                    , seed = seed' }
+    in
+        if cellInCells food' world.snake.body then
+            genFood world'
+        else
+            world'
+

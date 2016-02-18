@@ -8212,8 +8212,7 @@ Elm.Snake.Config.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var scoreMove = 1;
-   var scoreInitial = 0;
+   var scoreMove = -1;
    var scoreFood = 100;
    var enableAI = true;
    var colorFood = A3($Color.rgb,230,39,57);
@@ -8223,6 +8222,7 @@ Elm.Snake.Config.make = function (_elm) {
    var arenaHeight = 20;
    var arenaWidth = 30;
    var initialLength = 6;
+   var scoreInitial = scoreFood * initialLength;
    return _elm.Snake.Config.values = {_op: _op
                                      ,initialLength: initialLength
                                      ,arenaWidth: arenaWidth
@@ -8497,39 +8497,54 @@ Elm.Snake.Model.WorldAux.make = function (_elm) {
    $Snake$Model$World = Elm.Snake.Model.World.make(_elm),
    $Snake$Utility = Elm.Snake.Utility.make(_elm);
    var _op = {};
-   var headHitTail = F2(function (head,tail) {    return A3($List.foldr,F2(function (c,acc) {    return acc || _U.eq(c,head);}),false,tail);});
+   var cellInCells = F2(function (head,tail) {    return A3($List.foldr,F2(function (c,acc) {    return acc || _U.eq(c,head);}),false,tail);});
+   var genFood = function (world) {
+      genFood: while (true) {
+         var _p0 = A2($Random.generate,world.gen,world.seed);
+         var food$ = _p0._0;
+         var seed$ = _p0._1;
+         var world$ = _U.update(world,{food: food$,seed: seed$});
+         if (A2(cellInCells,food$,world.snake.body)) {
+               var _v0 = world$;
+               world = _v0;
+               continue genFood;
+            } else return world$;
+      }
+   };
    var isGameOver = function (world) {
       var tail = $Snake$Utility.tail(world.snake.body);
       var head = $Snake$Utility.head(world.snake.body);
-      return _U.cmp(head.x,0) < 0 || (_U.cmp(head.x,world.size.w) > -1 || (_U.cmp(head.y,0) < 0 || (_U.cmp(head.y,world.size.h) > -1 || A2(headHitTail,
+      return _U.cmp(head.x,0) < 0 || (_U.cmp(head.x,world.size.w) > -1 || (_U.cmp(head.y,0) < 0 || (_U.cmp(head.y,world.size.h) > -1 || A2(cellInCells,
       head,
       tail))));
    };
    var handleCommand = F2(function (input,world) {
-      var _p0 = input;
-      if (_p0.ctor === "Command") {
-            return world.commandHandled ? world : _U.update(world,{snake: A2($Snake$Model$Snake.turn,_p0._0,world.snake),commandHandled: true});
+      var _p1 = input;
+      if (_p1.ctor === "Command") {
+            return world.commandHandled ? world : _U.update(world,{snake: A2($Snake$Model$Snake.turn,_p1._0,world.snake),commandHandled: true});
          } else {
             return world;
          }
    });
    var updateWorld = F2(function (input,world) {
-      var _p1 = input;
-      if (_p1.ctor === "Tick") {
+      var _p2 = input;
+      if (_p2.ctor === "Tick") {
             if (_U.eq($Snake$Model$Snake.nextBodyCell(world.snake),world.food)) {
-                  var scoreAdd = $Snake$Config.scoreFood - $Snake$Config.scoreMove;
-                  var _p2 = A2($Random.generate,world.gen,world.seed);
-                  var food$ = _p2._0;
-                  var seed$ = _p2._1;
-                  return _U.update(world,
-                  {snake: $Snake$Model$Snake.grow(world.snake),food: food$,seed: seed$,commandHandled: false,gameScore: world.gameScore + scoreAdd});
+                  var scoreAdd = $Snake$Config.scoreFood + $Snake$Config.scoreMove;
+                  var world$ = genFood(world);
+                  return _U.update(world$,{snake: $Snake$Model$Snake.grow(world.snake),commandHandled: false,gameScore: world.gameScore + scoreAdd});
                } else return _U.update(world,
-               {snake: $Snake$Model$Snake.move(world.snake),commandHandled: false,gameScore: world.gameScore - $Snake$Config.scoreMove});
+               {snake: $Snake$Model$Snake.move(world.snake),commandHandled: false,gameScore: world.gameScore + $Snake$Config.scoreMove});
          } else {
             return A2(handleCommand,input,world);
          }
    });
-   return _elm.Snake.Model.WorldAux.values = {_op: _op,updateWorld: updateWorld,handleCommand: handleCommand,isGameOver: isGameOver,headHitTail: headHitTail};
+   return _elm.Snake.Model.WorldAux.values = {_op: _op
+                                             ,updateWorld: updateWorld
+                                             ,handleCommand: handleCommand
+                                             ,isGameOver: isGameOver
+                                             ,cellInCells: cellInCells
+                                             ,genFood: genFood};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.AI = Elm.Snake.AI || {};
