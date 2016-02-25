@@ -21,7 +21,7 @@ type alias Game =
 initialGame : Game
 initialGame =
     { world = World.initialWorld
-    , state = Start
+    , state = Playing
     , aiMessage = ""
     , lastMessage = ""
     }
