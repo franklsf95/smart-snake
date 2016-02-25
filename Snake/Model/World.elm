@@ -28,12 +28,12 @@ initialWorld : World
 initialWorld =
     let
         size = { w = Config.arenaWidth, h = Config.arenaHeight }
-        seed = Random.initialSeed 42
+        seed = Random.initialSeed Config.initialRandomSeed
         gen = Food.randGen size.w size.h
         (food', seed') = Random.generate gen seed
     in
         { size = size
-        , snake = Snake.initialSnake Config.initialLength size
+        , snake = Snake.initialSnake Config.snakeInitialLength size
         , food = food'
         , seed = seed'
         , gen = gen

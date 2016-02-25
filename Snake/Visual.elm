@@ -32,8 +32,8 @@ worldToMarkGrid world =
             |> markSnake world.snake
 
 markFood : Cell -> MarkGrid -> MarkGrid
-markFood food array =
-    U.set food.y food.x Food array
+markFood (x, y) array =
+    U.set y x Food array
 
 markSnake : Snake -> MarkGrid -> MarkGrid
 markSnake snake array =
@@ -43,7 +43,7 @@ markSnakeHelper : List Cell -> Int -> MarkGrid -> MarkGrid
 markSnakeHelper cs i acc =
     case cs of
         [] -> acc
-        c::cs' -> markSnakeHelper cs' (i + 1) (U.set c.y c.x (Snake i) acc)
+        (x, y)::cs' -> markSnakeHelper cs' (i + 1) (U.set y x (Snake i) acc)
 
 {- Draw Grid Elements -}
 
@@ -105,7 +105,7 @@ drawWorld world =
         worldElement = worldToCompositeElement world
     in
         worldElement
-        --E.flow E.down [worldElement, foodElement, snakeElement]
+        --E.flow E.down [worldElement, E.show world.gameScore, E.show world.snake.length, E.show world.food]
 
 {- Main view function -}
 

@@ -30,13 +30,13 @@ move snake =
 nextBodyCell : Snake -> Cell
 nextBodyCell snake =
     let
-        headCell = U.head snake.body
+        (hx, hy) = U.head snake.body
     in
         case snake.direction of
-            Up -> { headCell | y = headCell.y + 1 }
-            Down -> { headCell | y = headCell.y - 1 }
-            Left -> { headCell | x = headCell.x - 1 }
-            Right -> { headCell | x = headCell.x + 1 }
+            Up ->    (hx, hy + 1)
+            Down ->  (hx, hy - 1)
+            Left ->  (hx - 1, hy)
+            Right -> (hx + 1, hy)
 
 -- The snake grows forward when eating food
 grow : Snake -> Snake
@@ -70,7 +70,7 @@ isValidTurn newDirection snake =
 initialSnake : Int -> Size -> Snake
 initialSnake len size =
     let
-        x0 = size.w // 2
+        x0 = size.w // 4
         y0 = size.h // 2
     in
         { length = len
@@ -85,6 +85,6 @@ initialBody len (x, y) acc =
         acc
     else
         let
-            newCell = { x = x, y = y }
+            newCell = (x, y)
         in
             initialBody (len - 1) (x + 1, y) (newCell :: acc)

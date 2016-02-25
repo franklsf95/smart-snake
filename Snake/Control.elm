@@ -1,5 +1,6 @@
 module Snake.Control where
 
+import Snake.Config as Config
 import Snake.Model.Snake as Snake
 import Char
 import Keyboard
@@ -9,7 +10,7 @@ import Time exposing (Time)
 type Input = Tick | Command Snake.Direction | Next | Null
 
 tickSignal : Signal Time
-tickSignal = Time.fps 20
+tickSignal = Time.fps Config.fps
 
 -- Bind a key to an input. Fires when the key is pressed.
 keySignal : Char.KeyCode -> Input -> Signal Input

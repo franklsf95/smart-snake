@@ -48,11 +48,12 @@ isGameOver world =
         head = U.head world.snake.body
         tail = U.tail world.snake.body
     in
-        head.x < 0
-            || head.x >= world.size.w
-            || head.y < 0
-            || head.y >= world.size.h  -- head hits wall
+        cellOutOfBound head world  -- head hits wall
             || cellInCells head tail -- head hits body
+
+cellOutOfBound : Cell -> World -> Bool
+cellOutOfBound (x, y) world =
+    x < 0 || x >= world.size.w || y < 0 || y >= world.size.h
 
 cellInCells : Cell -> List Cell -> Bool
 cellInCells head tail =

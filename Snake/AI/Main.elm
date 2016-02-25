@@ -9,13 +9,16 @@ import Snake.AI.Interface exposing (AIState)
 import Snake.Control as Control exposing (Input (..))
 import Snake.Utility as U
 import Random
+import Set exposing (Set)
 
 -- the main function that evaluates a world and produces the next step
 {-
     The basic idea is:
     1. Determine the correct directions to the food
     2. Choose one that is valid and will not result in death
-    3. If nothing is chosen, do random walk (that will not result in death)
+    3. If nothing is chosen, do random walk, which
+      a) will not result in immediate death
+      b) look ahead to avoid a dead end
 -}
 next : World -> (Input, AIState)
 next world =
@@ -39,16 +42,20 @@ next world =
                 Just Null
             else
                 findValidTurn dirs
+        auxState = world.auxiliaryState
+        stateReset = { auxState | lastStepRandom = False }
     in
         case cmd of
             Nothing ->
                 nextRandom world
             Just c ->
-                (c, world.auxiliaryState)
+                (c, stateReset)
 
 relativeDirection : Cell -> Cell -> List Direction
 relativeDirection food head =
     let
+        (fx, fy) = food
+        (hx, hy) = head
         f x1 x2 y1 y2 =
             if x1 < x2 then
                 [y1]
@@ -57,7 +64,7 @@ relativeDirection food head =
             else
                 [y2]
     in
-        List.append (f food.x head.x Left Right) (f food.y head.y Down Up)
+        List.append (f fx hx Left Right) (f fy hy Down Up)
 
 {- Random Walk -}
 
@@ -68,8 +75,9 @@ nextRandom world =
         auxState = world.auxiliaryState
         (cmd, seed') = nextCommand world auxState.seed commands
         auxState' = { auxState
-                    | seed = seed' }
-        _ = Debug.log "Random choice" cmd
+                    | seed = seed'
+                    , lastStepRandom = True
+                    }
     in
         (cmd, auxState')
 
@@ -77,7 +85,7 @@ nextRandom world =
 possibleCommands : Snake -> List Input
 possibleCommands snake =
     let
-        base = [Null, Null]  -- with higher probability
+        base = [Null, Null]  -- Null 0.5, Left 0.25, Right 0.25
     in
         if snake.direction == Up || snake.direction == Down then
             List.append base [Command Left, Command Right]
@@ -105,10 +113,63 @@ nextCommand world seed commands =
                     (cmd, seed')
 
 -- check if the snake will die if it makes a move
+willDie : Input -> World -> Bool
 willDie input world =
     let
         world' = WorldAux.updateWorld input world
         world'' = WorldAux.updateWorld Tick world'
         gameOver = WorldAux.isGameOver world''
     in
-        gameOver
+        if gameOver then
+            True
+        else
+            case input of
+                Command d ->
+                    isDeadEnd d world
+                _ ->
+                    False
+
+-- check if one side of the head is a dead end (confined by own body)
+-- try filling the empty space, if less than 1/4 total area then it is dead end
+isDeadEnd : Direction -> World -> Bool
+isDeadEnd d world =
+    let
+        maxSteps = world.size.w * world.size.h // 4
+        start = world.snake |> Snake.turn d |> Snake.nextBodyCell
+        filledRegion = fill world maxSteps [start] Set.empty
+        filledArea = Set.size filledRegion
+        isDeadEnd = filledArea < maxSteps
+        _ =
+            if isDeadEnd then Debug.log "I foresee death" (filledArea, d)
+            else (0, Left)
+    in
+        isDeadEnd
+
+fill : World -> Int -> List Cell -> Set Cell -> Set Cell
+fill world maxSteps queue visited =
+    case queue of
+        [] ->
+            visited
+        c::cs ->
+            if Set.size visited >= maxSteps then
+                visited
+            else
+                let
+                    visited' = Set.insert c visited
+                    checkAndAdd cell q =
+                        if Set.member cell visited then
+                            q -- |> Debug.log "NO - visited"
+                        else if WorldAux.cellOutOfBound cell world then
+                            q -- |> Debug.log "NO - hit wall"
+                        else if WorldAux.cellInCells cell world.snake.body then
+                            q -- |> Debug.log "NO - hit body"
+                        else
+                            cell :: q -- |> Debug.log "YES"
+                    (x, y) = c
+                    q1 = checkAndAdd (x + 1, y) cs
+                    q2 = checkAndAdd (x - 1, y) q1
+                    q3 = checkAndAdd (x, y + 1) q2
+                    q4 = checkAndAdd (x, y - 1) q3
+                in
+                    fill world maxSteps q4 visited'
+

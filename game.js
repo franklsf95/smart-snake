@@ -8152,8 +8152,8 @@ Elm.Snake.AI.Interface.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialAuxilaryState = {seed: $Random.initialSeed(42)};
-   var AIState = function (a) {    return {seed: a};};
+   var initialAuxilaryState = {seed: $Random.initialSeed(42),lastStepRandom: false};
+   var AIState = F2(function (a,b) {    return {seed: a,lastStepRandom: b};});
    return _elm.Snake.AI.Interface.values = {_op: _op,AIState: AIState,initialAuxilaryState: initialAuxilaryState};
 };
 Elm.Snake = Elm.Snake || {};
@@ -8173,8 +8173,7 @@ Elm.Snake.Model.Cell.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var Cell = F2(function (a,b) {    return {x: a,y: b};});
-   return _elm.Snake.Model.Cell.values = {_op: _op,Cell: Cell};
+   return _elm.Snake.Model.Cell.values = {_op: _op};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Model = Elm.Snake.Model || {};
@@ -8212,8 +8211,12 @@ Elm.Snake.Config.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var snakeInitialLength = 20;
    var scoreMove = -1;
    var scoreFood = 100;
+   var scoreInitial = scoreFood * snakeInitialLength;
+   var initialRandomSeed = 42;
+   var fps = 30;
    var enableAI = true;
    var colorFood = A3($Color.rgb,230,39,57);
    var colorBody = A3($Color.rgb,110,211,207);
@@ -8221,10 +8224,7 @@ Elm.Snake.Config.make = function (_elm) {
    var cellSize = 20;
    var arenaHeight = 20;
    var arenaWidth = 30;
-   var initialLength = 6;
-   var scoreInitial = scoreFood * initialLength;
    return _elm.Snake.Config.values = {_op: _op
-                                     ,initialLength: initialLength
                                      ,arenaWidth: arenaWidth
                                      ,arenaHeight: arenaHeight
                                      ,cellSize: cellSize
@@ -8232,9 +8232,12 @@ Elm.Snake.Config.make = function (_elm) {
                                      ,colorBody: colorBody
                                      ,colorFood: colorFood
                                      ,enableAI: enableAI
+                                     ,fps: fps
+                                     ,initialRandomSeed: initialRandomSeed
                                      ,scoreFood: scoreFood
                                      ,scoreInitial: scoreInitial
-                                     ,scoreMove: scoreMove};
+                                     ,scoreMove: scoreMove
+                                     ,snakeInitialLength: snakeInitialLength};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Utility = Elm.Snake.Utility || {};
@@ -8307,7 +8310,7 @@ Elm.Snake.Model.Snake.make = function (_elm) {
          var _p3 = _p1._1;
          var _p2 = _p1._0;
          if (_U.eq(len,0)) return acc; else {
-               var newCell = {x: _p2,y: _p3};
+               var newCell = {ctor: "_Tuple2",_0: _p2,_1: _p3};
                var _v1 = len - 1,_v2 = {ctor: "_Tuple2",_0: _p2 + 1,_1: _p3},_v3 = A2($List._op["::"],newCell,acc);
                len = _v1;
                _p0 = _v2;
@@ -8317,13 +8320,15 @@ Elm.Snake.Model.Snake.make = function (_elm) {
       }
    });
    var nextBodyCell = function (snake) {
-      var headCell = $Snake$Utility.head(snake.body);
-      var _p4 = snake.direction;
-      switch (_p4.ctor)
-      {case "Up": return _U.update(headCell,{y: headCell.y + 1});
-         case "Down": return _U.update(headCell,{y: headCell.y - 1});
-         case "Left": return _U.update(headCell,{x: headCell.x - 1});
-         default: return _U.update(headCell,{x: headCell.x + 1});}
+      var _p4 = $Snake$Utility.head(snake.body);
+      var hx = _p4._0;
+      var hy = _p4._1;
+      var _p5 = snake.direction;
+      switch (_p5.ctor)
+      {case "Up": return {ctor: "_Tuple2",_0: hx,_1: hy + 1};
+         case "Down": return {ctor: "_Tuple2",_0: hx,_1: hy - 1};
+         case "Left": return {ctor: "_Tuple2",_0: hx - 1,_1: hy};
+         default: return {ctor: "_Tuple2",_0: hx + 1,_1: hy};}
    };
    var grow = function (snake) {
       var body1 = snake.body;
@@ -8339,7 +8344,7 @@ Elm.Snake.Model.Snake.make = function (_elm) {
    var Right = {ctor: "Right"};
    var initialSnake = F2(function (len,size) {
       var y0 = size.h / 2 | 0;
-      var x0 = size.w / 2 | 0;
+      var x0 = size.w / 4 | 0;
       return {length: len,direction: Right,body: A3(initialBody,len,{ctor: "_Tuple2",_0: x0,_1: y0},_U.list([]))};
    });
    var Left = {ctor: "Left"};
@@ -8384,7 +8389,7 @@ Elm.Snake.Model.Food.make = function (_elm) {
    $Snake$Model$Cell = Elm.Snake.Model.Cell.make(_elm);
    var _op = {};
    var randGen = F2(function (w,h) {
-      return A3($Random.map2,F2(function (x,y) {    return {x: x,y: y};}),A2($Random.$int,0,w - 1),A2($Random.$int,0,h - 1));
+      return A3($Random.map2,F2(function (x,y) {    return {ctor: "_Tuple2",_0: x,_1: y};}),A2($Random.$int,0,w - 1),A2($Random.$int,0,h - 1));
    });
    return _elm.Snake.Model.Food.values = {_op: _op,randGen: randGen};
 };
@@ -8404,13 +8409,14 @@ Elm.Snake.Control.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Snake$Config = Elm.Snake.Config.make(_elm),
    $Snake$Model$Snake = Elm.Snake.Model.Snake.make(_elm),
    $Time = Elm.Time.make(_elm);
    var _op = {};
    var keySignal = F2(function (key,input) {
       return A2($Signal.map,function (_p0) {    return input;},A3($Signal.filter,$Basics.identity,false,$Keyboard.isDown(key)));
    });
-   var tickSignal = $Time.fps(20);
+   var tickSignal = $Time.fps($Snake$Config.fps);
    var Null = {ctor: "Null"};
    var Next = {ctor: "Next"};
    var Command = function (a) {    return {ctor: "Command",_0: a};};
@@ -8455,14 +8461,14 @@ Elm.Snake.Model.World.make = function (_elm) {
    $Snake$Model$Snake = Elm.Snake.Model.Snake.make(_elm);
    var _op = {};
    var initialWorld = function () {
-      var seed = $Random.initialSeed(42);
+      var seed = $Random.initialSeed($Snake$Config.initialRandomSeed);
       var size = {w: $Snake$Config.arenaWidth,h: $Snake$Config.arenaHeight};
       var gen = A2($Snake$Model$Food.randGen,size.w,size.h);
       var _p0 = A2($Random.generate,gen,seed);
       var food$ = _p0._0;
       var seed$ = _p0._1;
       return {size: size
-             ,snake: A2($Snake$Model$Snake.initialSnake,$Snake$Config.initialLength,size)
+             ,snake: A2($Snake$Model$Snake.initialSnake,$Snake$Config.snakeInitialLength,size)
              ,food: food$
              ,seed: seed$
              ,gen: gen
@@ -8511,24 +8517,28 @@ Elm.Snake.Model.WorldAux.make = function (_elm) {
             } else return world$;
       }
    };
+   var cellOutOfBound = F2(function (_p1,world) {
+      var _p2 = _p1;
+      var _p4 = _p2._1;
+      var _p3 = _p2._0;
+      return _U.cmp(_p3,0) < 0 || (_U.cmp(_p3,world.size.w) > -1 || (_U.cmp(_p4,0) < 0 || _U.cmp(_p4,world.size.h) > -1));
+   });
    var isGameOver = function (world) {
       var tail = $Snake$Utility.tail(world.snake.body);
       var head = $Snake$Utility.head(world.snake.body);
-      return _U.cmp(head.x,0) < 0 || (_U.cmp(head.x,world.size.w) > -1 || (_U.cmp(head.y,0) < 0 || (_U.cmp(head.y,world.size.h) > -1 || A2(cellInCells,
-      head,
-      tail))));
+      return A2(cellOutOfBound,head,world) || A2(cellInCells,head,tail);
    };
    var handleCommand = F2(function (input,world) {
-      var _p1 = input;
-      if (_p1.ctor === "Command") {
-            return world.commandHandled ? world : _U.update(world,{snake: A2($Snake$Model$Snake.turn,_p1._0,world.snake),commandHandled: true});
+      var _p5 = input;
+      if (_p5.ctor === "Command") {
+            return world.commandHandled ? world : _U.update(world,{snake: A2($Snake$Model$Snake.turn,_p5._0,world.snake),commandHandled: true});
          } else {
             return world;
          }
    });
    var updateWorld = F2(function (input,world) {
-      var _p2 = input;
-      if (_p2.ctor === "Tick") {
+      var _p6 = input;
+      if (_p6.ctor === "Tick") {
             if (_U.eq($Snake$Model$Snake.nextBodyCell(world.snake),world.food)) {
                   var scoreAdd = $Snake$Config.scoreFood + $Snake$Config.scoreMove;
                   var world$ = genFood(world);
@@ -8543,6 +8553,7 @@ Elm.Snake.Model.WorldAux.make = function (_elm) {
                                              ,updateWorld: updateWorld
                                              ,handleCommand: handleCommand
                                              ,isGameOver: isGameOver
+                                             ,cellOutOfBound: cellOutOfBound
                                              ,cellInCells: cellInCells
                                              ,genFood: genFood};
 };
@@ -8562,6 +8573,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Random = Elm.Random.make(_elm),
    $Result = Elm.Result.make(_elm),
+   $Set = Elm.Set.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Snake$AI$Interface = Elm.Snake.AI.Interface.make(_elm),
    $Snake$Control = Elm.Snake.Control.make(_elm),
@@ -8571,33 +8583,80 @@ Elm.Snake.AI.Main.make = function (_elm) {
    $Snake$Model$WorldAux = Elm.Snake.Model.WorldAux.make(_elm),
    $Snake$Utility = Elm.Snake.Utility.make(_elm);
    var _op = {};
+   var fill = F4(function (world,maxSteps,queue,visited) {
+      fill: while (true) {
+         var _p0 = queue;
+         if (_p0.ctor === "[]") {
+               return visited;
+            } else {
+               var _p2 = _p0._0;
+               if (_U.cmp($Set.size(visited),maxSteps) > -1) return visited; else {
+                     var _p1 = _p2;
+                     var x = _p1._0;
+                     var y = _p1._1;
+                     var checkAndAdd = F2(function (cell,q) {
+                        return A2($Set.member,cell,visited) ? q : A2($Snake$Model$WorldAux.cellOutOfBound,
+                        cell,
+                        world) ? q : A2($Snake$Model$WorldAux.cellInCells,cell,world.snake.body) ? q : A2($List._op["::"],cell,q);
+                     });
+                     var q1 = A2(checkAndAdd,{ctor: "_Tuple2",_0: x + 1,_1: y},_p0._1);
+                     var q2 = A2(checkAndAdd,{ctor: "_Tuple2",_0: x - 1,_1: y},q1);
+                     var q3 = A2(checkAndAdd,{ctor: "_Tuple2",_0: x,_1: y + 1},q2);
+                     var q4 = A2(checkAndAdd,{ctor: "_Tuple2",_0: x,_1: y - 1},q3);
+                     var visited$ = A2($Set.insert,_p2,visited);
+                     var _v1 = world,_v2 = maxSteps,_v3 = q4,_v4 = visited$;
+                     world = _v1;
+                     maxSteps = _v2;
+                     queue = _v3;
+                     visited = _v4;
+                     continue fill;
+                  }
+            }
+      }
+   });
+   var isDeadEnd = F2(function (d,world) {
+      var start = $Snake$Model$Snake.nextBodyCell(A2($Snake$Model$Snake.turn,d,world.snake));
+      var maxSteps = world.size.w * world.size.h / 4 | 0;
+      var filledRegion = A4(fill,world,maxSteps,_U.list([start]),$Set.empty);
+      var filledArea = $Set.size(filledRegion);
+      var isDeadEnd = _U.cmp(filledArea,maxSteps) < 0;
+      var _p3 = isDeadEnd ? A2($Debug.log,"I foresee death",{ctor: "_Tuple2",_0: filledArea,_1: d}) : {ctor: "_Tuple2",_0: 0,_1: $Snake$Model$Snake.Left};
+      return isDeadEnd;
+   });
    var willDie = F2(function (input,world) {
       var world$ = A2($Snake$Model$WorldAux.updateWorld,input,world);
       var world$$ = A2($Snake$Model$WorldAux.updateWorld,$Snake$Control.Tick,world$);
       var gameOver = $Snake$Model$WorldAux.isGameOver(world$$);
-      return gameOver;
+      if (gameOver) return true; else {
+            var _p4 = input;
+            if (_p4.ctor === "Command") {
+                  return A2(isDeadEnd,_p4._0,world);
+               } else {
+                  return false;
+               }
+         }
    });
    var nextCommand = F3(function (world,seed,commands) {
       nextCommand: while (true) {
-         var _p0 = commands;
-         if (_p0.ctor === "[]") {
-               return _U.crashCase("Snake.AI.Main",{start: {line: 90,column: 5},end: {line: 105,column: 33}},_p0)("no possible command");
+         var _p5 = commands;
+         if (_p5.ctor === "[]") {
+               return _U.crashCase("Snake.AI.Main",{start: {line: 98,column: 5},end: {line: 113,column: 33}},_p5)("no possible command");
             } else {
-               if (_p0._1.ctor === "[]") {
-                     return {ctor: "_Tuple2",_0: _p0._0,_1: seed};
+               if (_p5._1.ctor === "[]") {
+                     return {ctor: "_Tuple2",_0: _p5._0,_1: seed};
                   } else {
                      var n = $List.length(commands);
-                     var _p2 = A2($Random.generate,A2($Random.$int,0,n - 1),seed);
-                     var i = _p2._0;
-                     var seed$ = _p2._1;
-                     var _p3 = A2($Snake$Utility.nthAndRest,i,commands);
-                     var cmd = _p3._0;
-                     var rest = _p3._1;
+                     var _p7 = A2($Random.generate,A2($Random.$int,0,n - 1),seed);
+                     var i = _p7._0;
+                     var seed$ = _p7._1;
+                     var _p8 = A2($Snake$Utility.nthAndRest,i,commands);
+                     var cmd = _p8._0;
+                     var rest = _p8._1;
                      if (A2(willDie,cmd,world)) {
-                           var _v1 = world,_v2 = seed$,_v3 = rest;
-                           world = _v1;
-                           seed = _v2;
-                           commands = _v3;
+                           var _v7 = world,_v8 = seed$,_v9 = rest;
+                           world = _v7;
+                           seed = _v8;
+                           commands = _v9;
                            continue nextCommand;
                         } else return {ctor: "_Tuple2",_0: cmd,_1: seed$};
                   }
@@ -8615,45 +8674,50 @@ Elm.Snake.AI.Main.make = function (_elm) {
    var nextRandom = function (world) {
       var auxState = world.auxiliaryState;
       var commands = possibleCommands(world.snake);
-      var _p4 = A3(nextCommand,world,auxState.seed,commands);
-      var cmd = _p4._0;
-      var seed$ = _p4._1;
-      var auxState$ = _U.update(auxState,{seed: seed$});
-      var _p5 = A2($Debug.log,"Random choice",cmd);
+      var _p9 = A3(nextCommand,world,auxState.seed,commands);
+      var cmd = _p9._0;
+      var seed$ = _p9._1;
+      var auxState$ = _U.update(auxState,{seed: seed$,lastStepRandom: true});
       return {ctor: "_Tuple2",_0: cmd,_1: auxState$};
    };
    var relativeDirection = F2(function (food,head) {
       var f = F4(function (x1,x2,y1,y2) {    return _U.cmp(x1,x2) < 0 ? _U.list([y1]) : _U.eq(x1,x2) ? _U.list([]) : _U.list([y2]);});
-      return A2($List.append,
-      A4(f,food.x,head.x,$Snake$Model$Snake.Left,$Snake$Model$Snake.Right),
-      A4(f,food.y,head.y,$Snake$Model$Snake.Down,$Snake$Model$Snake.Up));
+      var _p10 = head;
+      var hx = _p10._0;
+      var hy = _p10._1;
+      var _p11 = food;
+      var fx = _p11._0;
+      var fy = _p11._1;
+      return A2($List.append,A4(f,fx,hx,$Snake$Model$Snake.Left,$Snake$Model$Snake.Right),A4(f,fy,hy,$Snake$Model$Snake.Down,$Snake$Model$Snake.Up));
    });
    var next = function (world) {
+      var auxState = world.auxiliaryState;
+      var stateReset = _U.update(auxState,{lastStepRandom: false});
       var willNotDie = function (d) {    return $Basics.not(A2(willDie,$Snake$Control.Command(d),world));};
       var dirs = A2(relativeDirection,world.food,$Snake$Utility.head(world.snake.body));
       var snake = world.snake;
       var cur = snake.direction;
       var findValidTurn = function (ds) {
          findValidTurn: while (true) {
-            var _p6 = ds;
-            if (_p6.ctor === "[]") {
+            var _p12 = ds;
+            if (_p12.ctor === "[]") {
                   return $Maybe.Nothing;
                } else {
-                  var _p7 = _p6._0;
-                  if (A2($Snake$Model$Snake.isValidTurn,_p7,snake) && willNotDie(_p7)) return $Maybe.Just($Snake$Control.Command(_p7)); else {
-                        var _v5 = _p6._1;
-                        ds = _v5;
+                  var _p13 = _p12._0;
+                  if (A2($Snake$Model$Snake.isValidTurn,_p13,snake) && willNotDie(_p13)) return $Maybe.Just($Snake$Control.Command(_p13)); else {
+                        var _v11 = _p12._1;
+                        ds = _v11;
                         continue findValidTurn;
                      }
                }
          }
       };
       var cmd = A2($List.member,cur,dirs) && willNotDie(cur) ? $Maybe.Just($Snake$Control.Null) : findValidTurn(dirs);
-      var _p8 = cmd;
-      if (_p8.ctor === "Nothing") {
+      var _p14 = cmd;
+      if (_p14.ctor === "Nothing") {
             return nextRandom(world);
          } else {
-            return {ctor: "_Tuple2",_0: _p8._0,_1: world.auxiliaryState};
+            return {ctor: "_Tuple2",_0: _p14._0,_1: stateReset};
          }
    };
    return _elm.Snake.AI.Main.values = {_op: _op
@@ -8662,7 +8726,9 @@ Elm.Snake.AI.Main.make = function (_elm) {
                                       ,nextRandom: nextRandom
                                       ,possibleCommands: possibleCommands
                                       ,nextCommand: nextCommand
-                                      ,willDie: willDie};
+                                      ,willDie: willDie
+                                      ,isDeadEnd: isDeadEnd
+                                      ,fill: fill};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Game = Elm.Snake.Game || {};
@@ -8689,16 +8755,17 @@ Elm.Snake.Game.make = function (_elm) {
             var _p0 = $Snake$AI$Main.next(world);
             var input = _p0._0;
             var state$ = _p0._1;
-            var message = !_U.eq(input,$Snake$Control.Null) ? $Basics.toString(input) : "";
+            var m = state$.lastStepRandom ? " (Random)" : "";
+            var message = !_U.eq(input,$Snake$Control.Null) ? A2($Basics._op["++"],$Basics.toString(input),m) : "";
             var world$ = _U.update(world,{auxiliaryState: state$});
             return {ctor: "_Tuple2",_0: A2($Snake$Model$WorldAux.handleCommand,input,world$),_1: message};
          } else return {ctor: "_Tuple2",_0: world,_1: ""};
    };
-   var Game = F3(function (a,b,c) {    return {world: a,state: b,aiMessage: c};});
+   var Game = F4(function (a,b,c,d) {    return {world: a,state: b,aiMessage: c,lastMessage: d};});
    var Dead = {ctor: "Dead"};
    var Playing = {ctor: "Playing"};
    var Start = {ctor: "Start"};
-   var initialGame = {world: $Snake$Model$World.initialWorld,state: Start,aiMessage: ""};
+   var initialGame = {world: $Snake$Model$World.initialWorld,state: Start,aiMessage: "",lastMessage: ""};
    var updateGame = F2(function (input,game) {
       var _p1 = {ctor: "_Tuple2",_0: input,_1: game.state};
       _v0_3: do {
@@ -8706,11 +8773,13 @@ Elm.Snake.Game.make = function (_elm) {
                switch (_p1._1.ctor)
                {case "Playing": var _p2 = runAI(game.world);
                     var world$ = _p2._0;
-                    var aiMessage = _p2._1;
+                    var msg = _p2._1;
                     var world$$ = A2($Snake$Model$WorldAux.updateWorld,input,world$);
                     var gameOver = $Snake$Model$WorldAux.isGameOver(world$$);
                     var state$ = gameOver ? Dead : Playing;
-                    return {world: world$$,state: state$,aiMessage: aiMessage};
+                    var lastMessage = game.aiMessage;
+                    var message$ = _U.eq(msg,"") ? lastMessage : msg;
+                    return {world: world$$,state: state$,aiMessage: message$,lastMessage: lastMessage};
                   case "Start": if (_p1._0.ctor === "Next") {
                           return _U.update(game,{world: $Snake$Model$World.initialWorld,state: Playing});
                        } else {
@@ -8793,8 +8862,7 @@ Elm.Snake.Visual.make = function (_elm) {
          if (_p1.ctor === "[]") {
                return acc;
             } else {
-               var _p2 = _p1._0;
-               var _v2 = _p1._1,_v3 = i + 1,_v4 = A4($Snake$Utility.set,_p2.y,_p2.x,Snake(i),acc);
+               var _v2 = _p1._1,_v3 = i + 1,_v4 = A4($Snake$Utility.set,_p1._0._1,_p1._0._0,Snake(i),acc);
                cs = _v2;
                i = _v3;
                acc = _v4;
@@ -8804,7 +8872,7 @@ Elm.Snake.Visual.make = function (_elm) {
    });
    var markSnake = F2(function (snake,array) {    return A3(markSnakeHelper,snake.body,0,array);});
    var Food = {ctor: "Food"};
-   var markFood = F2(function (food,array) {    return A4($Snake$Utility.set,food.y,food.x,Food,array);});
+   var markFood = F2(function (_p2,array) {    var _p3 = _p2;return A4($Snake$Utility.set,_p3._1,_p3._0,Food,array);});
    var Empty = {ctor: "Empty"};
    var worldToMarkGrid = function (world) {
       var h = world.size.h;
@@ -8812,16 +8880,16 @@ Elm.Snake.Visual.make = function (_elm) {
       var array = A2($Array.repeat,h,A2($Array.repeat,w,Empty));
       return A2(markSnake,world.snake,A2(markFood,world.food,array));
    };
-   var worldToElementGrid = function (_p3) {    return A2($Array.map,$Array.map(drawElement),worldToMarkGrid(_p3));};
+   var worldToElementGrid = function (_p4) {    return A2($Array.map,$Array.map(drawElement),worldToMarkGrid(_p4));};
    var worldToCompositeElement = function (world) {
       var array = worldToElementGrid(world);
       var loopRow = F2(function (i,acc) {
          loopRow: while (true) if (_U.eq(i,world.size.h)) return acc; else {
                var rowArray = A2($Snake$Utility.unmaybe,"no such row",A2($Array.get,i,array));
                var newRow = A2($Graphics$Element.flow,$Graphics$Element.right,$Array.toList(rowArray));
-               var _v5 = i + 1,_v6 = A2($Graphics$Element.below,acc,newRow);
-               i = _v5;
-               acc = _v6;
+               var _v6 = i + 1,_v7 = A2($Graphics$Element.below,acc,newRow);
+               i = _v6;
+               acc = _v7;
                continue loopRow;
             }
       });

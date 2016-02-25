@@ -7,9 +7,11 @@ import Random
 
 type alias AIState =
     { seed : Random.Seed
+    , lastStepRandom : Bool
     }
 
 initialAuxilaryState : AIState
 initialAuxilaryState =
     { seed = Random.initialSeed 42
+    , lastStepRandom = False
     }

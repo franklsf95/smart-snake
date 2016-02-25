@@ -6,6 +6,6 @@ import Random
 randGen : Int -> Int -> Random.Generator Cell
 randGen w h =
     Random.map2
-        (\x y -> { x = x, y = y })
+        (\x y -> (x, y))
         (Random.int 0 (w - 1))
         (Random.int 0 (h - 1))
