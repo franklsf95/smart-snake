@@ -130,11 +130,12 @@ willDie input world =
                     False
 
 -- check if one side of the head is a dead end (confined by own body)
--- try filling the empty space, if less than 1/4 total area then it is dead end
+-- try filling the empty space, dead end = area less than 1/2 total
+-- TODO: alternative idea: dead end when all search stop is due to SNAKE BODY
 isDeadEnd : Direction -> World -> Bool
 isDeadEnd d world =
     let
-        maxSteps = world.size.w * world.size.h // 4
+        maxSteps = (world.size.w * world.size.h - world.snake.length) // 2
         start = world.snake |> Snake.turn d |> Snake.nextBodyCell
         filledRegion = fill world maxSteps [start] Set.empty
         filledArea = Set.size filledRegion
@@ -161,7 +162,7 @@ fill world maxSteps queue visited =
                             q -- |> Debug.log "NO - visited"
                         else if WorldAux.cellOutOfBound cell world then
                             q -- |> Debug.log "NO - hit wall"
-                        else if WorldAux.cellInCells cell world.snake.body then
+                        else if WorldAux.cellInSnakeBody cell world then
                             q -- |> Debug.log "NO - hit body"
                         else
                             cell :: q -- |> Debug.log "YES"

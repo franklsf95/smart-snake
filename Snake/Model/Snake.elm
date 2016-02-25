@@ -4,6 +4,7 @@ import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Size exposing (Size)
 import Snake.Config
 import Snake.Utility as U
+import Set exposing (Set)
 
 {- Snake -}
 
@@ -13,6 +14,7 @@ type alias Snake =
     { length : Int
     , direction : Direction
     , body : List Cell
+    , bodySet : Set Cell
     }
 
 {- Snake movement -}
@@ -24,7 +26,10 @@ move snake =
         body1 = List.take (snake.length - 1) snake.body
         body2 = (nextBodyCell snake) :: body1
     in
-        { snake | body = body2 }
+        { snake
+            | body = body2
+            , bodySet = Set.fromList body2
+        }
 
 -- Helper function to generate the next cell for the snake
 nextBodyCell : Snake -> Cell
@@ -47,7 +52,9 @@ grow snake =
     in
         { snake
             | length = snake.length + 1
-            , body = body2 }
+            , body = body2
+            , bodySet = Set.fromList body2
+        }
 
 -- Change direction of the snake
 turn : Direction -> Snake -> Snake
@@ -72,10 +79,12 @@ initialSnake len size =
     let
         x0 = size.w // 4
         y0 = size.h // 2
+        body = initialBody len (x0, y0) []
     in
         { length = len
         , direction = Right
-        , body = initialBody len (x0, y0) []
+        , body = body
+        , bodySet = Set.fromList body
         }
 
 -- Helper function to generate snake body

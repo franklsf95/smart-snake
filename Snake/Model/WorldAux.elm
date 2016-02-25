@@ -8,6 +8,7 @@ import Snake.Config as Config
 import Snake.Control as Control
 import Snake.Utility as U
 import Random
+import Set exposing (Set)
 
 {- Update World -}
 
@@ -46,18 +47,18 @@ isGameOver : World -> Bool
 isGameOver world =
     let
         head = U.head world.snake.body
-        tail = U.tail world.snake.body
+        -- If head and tail are the same cell, then the bodySet would have
+        -- size less than the snake length
+        headHitTail = Set.size world.snake.bodySet /= world.snake.length
     in
-        cellOutOfBound head world  -- head hits wall
-            || cellInCells head tail -- head hits body
+        cellOutOfBound head world || headHitTail
 
 cellOutOfBound : Cell -> World -> Bool
 cellOutOfBound (x, y) world =
     x < 0 || x >= world.size.w || y < 0 || y >= world.size.h
 
-cellInCells : Cell -> List Cell -> Bool
-cellInCells head tail =
-    List.foldr (\c acc -> acc || c == head) False tail
+cellInSnakeBody : Cell -> World -> Bool
+cellInSnakeBody c world = Set.member c world.snake.bodySet
 
 genFood : World -> World
 genFood world =
@@ -67,7 +68,7 @@ genFood world =
                     | food = food'
                     , seed = seed' }
     in
-        if cellInCells food' world.snake.body then
+        if cellInSnakeBody food' world then
             genFood world'
         else
             world'
