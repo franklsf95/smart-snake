@@ -4,7 +4,7 @@ module Snake.AI.Main where
 import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Snake as Snake exposing (Snake)
 import Snake.Model.World as World exposing (World)
-import Snake.Model.Direction as D exposing (Direction(..), insertTurn)
+import Snake.Model.Direction as Direction exposing (Direction(..))
 import Snake.Model.WorldAux as WorldAux
 import Snake.AI.Interface exposing (AIState)
 import Snake.Control as Control exposing (Input (..))
@@ -28,26 +28,33 @@ next world =
         snake = world.snake
         cur = snake.direction
         dirs = relativeDirection world.food (U.head world.snake.body)
-        willNotDie d = not (willDie (Command d) world)
+        dangerousMove d =
+            if willDie world (Command d) then
+                True
+            else
+                deadEndScore world d |> snd
+        safeMove = not << dangerousMove
         findValidTurn ds =
             case ds of
                 [] ->
                     Nothing
                 d::ds' ->
-                    if Snake.isValidTurn d snake && willNotDie d then
+                    if Snake.isValidTurn d snake && safeMove d then
                         Just (Command d)
                     else
                         findValidTurn ds'
         cmd =
-            if List.member cur dirs && willNotDie cur then
+            if List.member cur dirs && safeMove cur then
                 -- stay on the current direction
                 Just Null
             else
                 findValidTurn (dirs ++ [world.auxiliaryState.lastTurn])
         auxState = world.auxiliaryState
-        stateReset d = 
-            { auxState | lastStepRandom = False 
-                        ,lastTurn = cur}
+        stateReset d =
+            { auxState
+                | lastStepRandom = False
+                , lastTurn = cur
+            }
     in
         case cmd of
             Nothing ->
@@ -74,16 +81,25 @@ relativeDirection food head =
 
 {- Random Walk -}
 
+-- Score measures the potential danger of a step.
+-- A larger score means farther from death. 0 means immediate death.
+type alias Score = Int
+
+-- scoreSafe indicates no foreseeable danger.
+scoreSafe : Score
+scoreSafe = 999999999
+
 nextRandom : World -> (Input, AIState)
 nextRandom world =
     let
         commands = possibleCommands world.snake
+        safeCommands = filterCommands world commands
         auxState = world.auxiliaryState
-        (cmd, seed') = nextCommand world auxState.seed commands
+        (cmd, seed') = nextCommand auxState.seed safeCommands
         auxState' = { auxState
                     | seed = seed'
                     , lastStepRandom = True
-                    , lastTurn = 
+                    , lastTurn =
                         case cmd of
                             Command d ->
                                 world.snake.direction
@@ -104,9 +120,24 @@ possibleCommands snake =
         else
             List.append base [Command Up, Command Down]
 
+-- only chooses the "safe" commands, or the best among the dangerous ones
+-- If a safe choice exists, then only choose from safe choices;
+-- Otherwise, choose the least dangerous one.
+filterCommands : World -> List Input -> List Input
+filterCommands world commands =
+    let
+        scores = List.map (evaluateCommand world) commands
+        pairs = List.map2 (,) scores commands |> Debug.log "scores"
+        comparePair (s1, _) (s2, _) = s1 > s2
+        (maxScore, maxCmd) = U.maxBy comparePair pairs |> U.unmaybe "score"
+        filtered = List.filter (\(s, _) -> s == maxScore) pairs
+        filteredResult = List.map snd filtered
+    in
+        filteredResult
+
 -- generates a move that will not result in death
-nextCommand : World -> Random.Seed -> List Input -> (Input, Random.Seed)
-nextCommand world seed commands =
+nextCommand : Random.Seed -> List Input -> (Input, Random.Seed)
+nextCommand seed commands =
     case commands of
         [] ->
             Debug.crash "no possible command"
@@ -116,47 +147,45 @@ nextCommand world seed commands =
             let
                 n = List.length commands
                 (i, seed') = Random.generate (Random.int 0 (n - 1)) seed
-                (cmd, rest) = U.nthAndRest i commands
+                (cmd, _) = U.nthAndRest i commands
             in
-                -- choose a different command
-                if willDie cmd world then
-                    nextCommand world seed' rest
-                else
-                    (cmd, seed')
+                (cmd, seed')
+
+evaluateCommand : World -> Input -> Score
+evaluateCommand world input =
+    if willDie world input then
+        0
+    else
+        case input of
+            Command d ->
+                deadEndScore world d |> fst
+            _ ->
+                scoreSafe
 
 -- check if the snake will die if it makes a move
-willDie : Input -> World -> Bool
-willDie input world =
+willDie : World -> Input -> Bool
+willDie world input =
     let
         world' = WorldAux.updateWorld input world
         world'' = WorldAux.updateWorld Tick world'
         gameOver = WorldAux.isGameOver world''
     in
-        if gameOver then
-            True
-        else
-            case input of
-                Command d ->
-                    isDeadEnd d world
-                _ ->
-                    False
+        gameOver
 
 -- check if one side of the head is a dead end (confined by own body)
 -- try filling the empty space, dead end = area less than 1/2 total
 -- TODO: alternative idea: dead end when all search stop is due to SNAKE BODY
-isDeadEnd : Direction -> World -> Bool
-isDeadEnd d world =
+deadEndScore : World -> Direction -> (Score, Bool)
+deadEndScore world d =
     let
         maxSteps = (world.size.w * world.size.h - world.snake.length) // 2
         start = world.snake |> Snake.turn d |> Snake.nextBodyCell
         filledRegion = fill world maxSteps [start] Set.empty
         filledArea = Set.size filledRegion
         isDeadEnd = filledArea < maxSteps
-        _ =
-            if isDeadEnd then Debug.log "I foresee death" (filledArea, d)
-            else (0, Left)
+        score = if isDeadEnd then filledArea else scoreSafe
     in
-        isDeadEnd
+        (score, isDeadEnd)
 
 fill : World -> Int -> List Cell -> Set Cell -> Set Cell
 fill world maxSteps queue visited =
@@ -185,4 +214,3 @@ fill world maxSteps queue visited =
                     q4 = checkAndAdd (x, y - 1) q3
                 in
                     fill world maxSteps q4 visited'
-

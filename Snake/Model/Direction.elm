@@ -1,8 +1,6 @@
 module Snake.Model.Direction where
 
-
 type Direction = Up | Down | Left | Right
-
 
 insertTurn : Direction -> List Direction -> List Direction
 insertTurn t ts =
