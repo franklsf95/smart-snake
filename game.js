@@ -8253,19 +8253,19 @@ Elm.Snake.Config.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var snakeInitialLength = 20;
+   var snakeInitialLength = 6;
    var scoreMove = -1;
    var scoreFood = 100;
    var scoreInitial = scoreFood * snakeInitialLength;
    var initialRandomSeed = 42;
-   var fps = 60;
+   var fps = 300;
    var enableAI = true;
    var colorFood = A3($Color.rgb,230,39,57);
    var colorBody = A3($Color.rgb,110,211,207);
    var colorBackground = A3($Color.rgb,62,56,64);
-   var cellSize = 20;
-   var arenaHeight = 20;
-   var arenaWidth = 30;
+   var cellSize = 40;
+   var arenaHeight = 10;
+   var arenaWidth = 15;
    return _elm.Snake.Config.values = {_op: _op
                                      ,arenaWidth: arenaWidth
                                      ,arenaHeight: arenaHeight
