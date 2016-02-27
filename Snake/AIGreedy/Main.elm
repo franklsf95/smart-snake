@@ -1,4 +1,4 @@
--- AI Smart
+-- AI Greedy
 module Snake.AI.Main where
 
 import Snake.Model.Cell exposing (Cell)
@@ -18,9 +18,9 @@ import Set exposing (Set)
     The basic idea is:
     1. Determine the correct directions to the food
     2. Choose one that is valid and will not result in death
-    3. If nothing is chosen, then walk in original direction
-    4. If must turn, then evaluate the map and choose a direction with
-       more free space
+    3. If nothing is chosen, do random walk, which
+      a) will not result in immediate death
+      b) look ahead to avoid a dead end
 -}
 next : World -> (Input, AIState)
 next world =
@@ -50,20 +50,19 @@ next world =
             else
                 findValidTurn (dirs ++ [world.auxiliaryState.lastTurn])
         auxState = world.auxiliaryState
-        stateReset = { auxState | lastStepRandom = False }
+        stateReset d =
+            { auxState
+                | lastStepRandom = False
+                , lastTurn = cur
+            }
     in
         case cmd of
             Nothing ->
-                -- If walking straight will not cause death, then walk straight
-                -- Else make a random turn
-                if not (willDie world Null) then
-                    (Null, stateReset)
-                else
-                    nextRandom world
+                nextRandom world
             Just (Command d) ->
-                ((Command d), { stateReset | lastTurn = cur })
+                ((Command d), stateReset d)
             Just c ->
-                (c, stateReset)
+                (c, { auxState | lastStepRandom = False })
 
 relativeDirection : Cell -> Cell -> List Direction
 relativeDirection food head =
@@ -82,11 +81,11 @@ relativeDirection food head =
 
 {- Random Walk -}
 
--- Score measures the potential danger of a step
--- A larger score means farther from death. 0 means immediate death
+-- Score measures the potential danger of a step.
+-- A larger score means farther from death. 0 means immediate death.
 type alias Score = Int
 
--- scoreSafe indicates no foreseeable danger
+-- scoreSafe indicates no foreseeable danger.
 scoreSafe : Score
 scoreSafe = 999999999
 
@@ -114,7 +113,7 @@ nextRandom world =
 possibleCommands : Snake -> List Input
 possibleCommands snake =
     let
-        base = []
+        base = [Null, Null]  -- Null 0.5, Left 0.25, Right 0.25
     in
         if snake.direction == Up || snake.direction == Down then
             List.append base [Command Left, Command Right]

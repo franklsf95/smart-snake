@@ -8253,19 +8253,19 @@ Elm.Snake.Config.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var snakeInitialLength = 6;
+   var snakeInitialLength = 20;
    var scoreMove = -1;
    var scoreFood = 100;
    var scoreInitial = scoreFood * snakeInitialLength;
    var initialRandomSeed = 42;
-   var fps = 300;
+   var fps = 30;
    var enableAI = true;
    var colorFood = A3($Color.rgb,230,39,57);
    var colorBody = A3($Color.rgb,110,211,207);
    var colorBackground = A3($Color.rgb,62,56,64);
-   var cellSize = 40;
-   var arenaHeight = 10;
-   var arenaWidth = 15;
+   var cellSize = 20;
+   var arenaHeight = 20;
+   var arenaWidth = 30;
    return _elm.Snake.Config.values = {_op: _op
                                      ,arenaWidth: arenaWidth
                                      ,arenaHeight: arenaHeight
@@ -8692,7 +8692,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
    var nextCommand = F2(function (seed,commands) {
       var _p3 = commands;
       if (_p3.ctor === "[]") {
-            return _U.crashCase("Snake.AI.Main",{start: {line: 141,column: 5},end: {line: 152,column: 29}},_p3)("no possible command");
+            return _U.crashCase("Snake.AI.Main",{start: {line: 142,column: 5},end: {line: 153,column: 29}},_p3)("no possible command");
          } else {
             if (_p3._1.ctor === "[]") {
                   return {ctor: "_Tuple2",_0: _p3._0,_1: seed};
@@ -8708,7 +8708,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
          }
    });
    var possibleCommands = function (snake) {
-      var base = _U.list([$Snake$Control.Null,$Snake$Control.Null]);
+      var base = _U.list([]);
       return _U.eq(snake.direction,$Snake$Model$Direction.Up) || _U.eq(snake.direction,$Snake$Model$Direction.Down) ? A2($List.append,
       base,
       _U.list([$Snake$Control.Command($Snake$Model$Direction.Left),$Snake$Control.Command($Snake$Model$Direction.Right)])) : A2($List.append,
@@ -8780,12 +8780,12 @@ Elm.Snake.AI.Main.make = function (_elm) {
    });
    var next = function (world) {
       var auxState = world.auxiliaryState;
+      var stateReset = _U.update(auxState,{lastStepRandom: false});
       var dangerousMove = function (d) {    return A2(willDie,world,$Snake$Control.Command(d)) ? true : $Basics.snd(A2(deadEndScore,world,d));};
       var safeMove = function (_p19) {    return $Basics.not(dangerousMove(_p19));};
       var dirs = A2(relativeDirection,world.food,$Snake$Utility.head(world.snake.body));
       var snake = world.snake;
       var cur = snake.direction;
-      var stateReset = function (d) {    return _U.update(auxState,{lastStepRandom: false,lastTurn: cur});};
       var findValidTurn = function (ds) {
          findValidTurn: while (true) {
             var _p20 = ds;
@@ -8806,13 +8806,12 @@ Elm.Snake.AI.Main.make = function (_elm) {
       _U.list([world.auxiliaryState.lastTurn])));
       var _p22 = cmd;
       if (_p22.ctor === "Nothing") {
-            return nextRandom(world);
+            return $Basics.not(A2(willDie,world,$Snake$Control.Null)) ? {ctor: "_Tuple2",_0: $Snake$Control.Null,_1: stateReset} : nextRandom(world);
          } else {
             if (_p22._0.ctor === "Command") {
-                  var _p23 = _p22._0._0;
-                  return {ctor: "_Tuple2",_0: $Snake$Control.Command(_p23),_1: stateReset(_p23)};
+                  return {ctor: "_Tuple2",_0: $Snake$Control.Command(_p22._0._0),_1: _U.update(stateReset,{lastTurn: cur})};
                } else {
-                  return {ctor: "_Tuple2",_0: _p22._0,_1: _U.update(auxState,{lastStepRandom: false})};
+                  return {ctor: "_Tuple2",_0: _p22._0,_1: stateReset};
                }
          }
    };
