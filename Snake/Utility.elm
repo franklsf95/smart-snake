@@ -18,6 +18,14 @@ head = unmaybefy "empty list" List.head
 tail : List a -> List a
 tail = unmaybefy "empty list" List.tail
 
+second : List a -> a 
+second l =
+    case l of
+        x1 :: x2 :: [] ->
+            x2
+        _ ->
+            Debug.crash "second"
+
 set : Int -> Int -> a -> Array (Array a) -> Array (Array a)
 set i j x array =
     case Array.get i array of

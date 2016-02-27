@@ -5,6 +5,7 @@ import Snake.Model.WorldAux as WorldAux
 import Snake.AI.Main as AIMain
 import Snake.Config as Config
 import Snake.Control as Control
+import Snake.Utility as U
 import Signal
 
 {- Game -}
@@ -58,10 +59,11 @@ runAI world =
     if Config.enableAI then
         let
             (input, state') = AIMain.next world
-            m = if state'.lastStepRandom then " (Random)" else ""
+            m = if state'.lastStepRandom then " (Random)   " else "   "
+            lastTurn = toString world.auxiliaryState.lastTurn
             message =
                 if input /= Control.Null then
-                    toString input ++ m
+                    toString input ++ m ++ lastTurn
                 else
                     ""
             world' = { world | auxiliaryState = state' }

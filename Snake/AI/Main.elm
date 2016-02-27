@@ -2,14 +2,16 @@
 module Snake.AI.Main where
 
 import Snake.Model.Cell exposing (Cell)
-import Snake.Model.Snake as Snake exposing (Snake, Direction (..))
+import Snake.Model.Snake as Snake exposing (Snake)
 import Snake.Model.World as World exposing (World)
+import Snake.Model.Direction as D exposing (Direction(..), insertTurn)
 import Snake.Model.WorldAux as WorldAux
 import Snake.AI.Interface exposing (AIState)
 import Snake.Control as Control exposing (Input (..))
 import Snake.Utility as U
 import Random
 import Set exposing (Set)
+
 
 -- the main function that evaluates a world and produces the next step
 {-
@@ -41,15 +43,19 @@ next world =
                 -- stay on the current direction
                 Just Null
             else
-                findValidTurn dirs
+                findValidTurn (dirs ++ [world.auxiliaryState.lastTurn])
         auxState = world.auxiliaryState
-        stateReset = { auxState | lastStepRandom = False }
+        stateReset d = 
+            { auxState | lastStepRandom = False 
+                        ,lastTurn = cur}
     in
         case cmd of
             Nothing ->
                 nextRandom world
+            Just (Command d) ->
+                ((Command d), stateReset d)
             Just c ->
-                (c, stateReset)
+                (c, { auxState | lastStepRandom = False })
 
 relativeDirection : Cell -> Cell -> List Direction
 relativeDirection food head =
@@ -77,6 +83,12 @@ nextRandom world =
         auxState' = { auxState
                     | seed = seed'
                     , lastStepRandom = True
+                    , lastTurn = 
+                        case cmd of
+                            Command d ->
+                                world.snake.direction
+                            _ ->
+                                world.auxiliaryState.lastTurn
                     }
     in
         (cmd, auxState')

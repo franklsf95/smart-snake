@@ -2,13 +2,13 @@ module Snake.Model.Snake where
 
 import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Size exposing (Size)
+import Snake.Model.Direction exposing (Direction(..))
 import Snake.Config
 import Snake.Utility as U
 import Set exposing (Set)
 
 {- Snake -}
 
-type Direction = Up | Down | Left | Right
 
 type alias Snake =
     { length : Int

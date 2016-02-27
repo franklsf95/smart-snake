@@ -2,12 +2,13 @@ module Snake.Control where
 
 import Snake.Config as Config
 import Snake.Model.Snake as Snake
+import Snake.Model.Direction exposing (Direction(..))
 import Char
 import Keyboard
 import Signal
 import Time exposing (Time)
 
-type Input = Tick | Command Snake.Direction | Next | Null
+type Input = Tick | Command Direction | Next | Null
 
 tickSignal : Signal Time
 tickSignal = Time.fps Config.fps
@@ -23,8 +24,8 @@ inputSignal =
     Signal.mergeMany
         [ Signal.map (\_ -> Tick) tickSignal
         , keySignal 32 Next  -- space key
-        , keySignal 37 (Command Snake.Left)
-        , keySignal 38 (Command Snake.Up)
-        , keySignal 39 (Command Snake.Right)
-        , keySignal 40 (Command Snake.Down)
+        , keySignal 37 (Command Left)
+        , keySignal 38 (Command Up)
+        , keySignal 39 (Command Right)
+        , keySignal 40 (Command Down)
         ]
