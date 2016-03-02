@@ -4,7 +4,7 @@ module Snake.Model.WorldAux where
 import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Snake as Snake
 import Snake.Model.World as World exposing (World)
-import Snake.Config as Config
+import Snake.Config exposing (GameConfig)
 import Snake.Control as Control
 import Snake.Utility as U
 import Random
@@ -12,14 +12,14 @@ import Set exposing (Set)
 
 {- Update World -}
 
-updateWorld : Control.Input -> World -> World
-updateWorld input world =
+updateWorld : GameConfig -> Control.Input -> World -> World
+updateWorld gameConfig input world =
     case input of
         Control.Tick ->
             if Snake.nextBodyCell world.snake == world.food then
                 let
                     world' = genFood world
-                    scoreAdd = Config.scoreFood + Config.scoreMove
+                    scoreAdd = gameConfig.scoreFood + gameConfig.scoreMove
                 in
                     { world' | snake = Snake.grow world.snake
                              , commandHandled = False
@@ -27,7 +27,7 @@ updateWorld input world =
             else
                 { world | snake = Snake.move world.snake
                         , commandHandled = False
-                        , gameScore = world.gameScore + Config.scoreMove }
+                        , gameScore = world.gameScore + gameConfig.scoreMove }
         _ ->
             handleCommand input world
 

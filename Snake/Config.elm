@@ -1,20 +1,37 @@
 module Snake.Config where
 
-import Snake.AI.Interface as AI
-import Color
+type alias GameConfig =
+    { arenaWidth : Int
+    , arenaHeight : Int
+    , enableAI : Bool
+    , fps : Int
+    , randomSeed : Int
+    , scoreFood : Int
+    , scoreInitial : Int
+    , scoreMove : Int
+    , snakeInitialLength : Int
+    }
 
-arenaWidth = 30
-arenaHeight = 20
-cellSize = 20
-colorBackground = Color.rgb 62 56 64
-colorBody = Color.rgb 110 211 207
-colorFood = Color.rgb 230 39 57
-enableAI = True
-fps = 30
-initialRandomSeed = 42
-scoreFood = 100
-scoreInitial = scoreFood * snakeInitialLength
-scoreMove = -1
-snakeInitialLength = 20
+type alias RGB = (Int, Int, Int)
 
--- Color palette: http://www.colourlovers.com/palette/4094210/Invincible_3.0
+type alias VisualConfig =
+    { cellSize : Int
+    , colorBackground : RGB
+    , colorBody : RGB
+    , colorFood : RGB
+    }
+
+{- Default Configuration -}
+
+defaultGameConfig : GameConfig
+defaultGameConfig =
+    { arenaWidth = 30
+    , arenaHeight = 20
+    , enableAI = True
+    , fps = 30
+    , randomSeed = 42
+    , scoreFood = 100
+    , scoreInitial = 600
+    , scoreMove = -1
+    , snakeInitialLength = 6
+    }

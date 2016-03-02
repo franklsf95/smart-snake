@@ -1,4 +1,4 @@
 Smart Snake
 ===========
 
-Play the snake game or watch computer controlling the perfect snake.
+Play the snake game or watch AI control the perfect snake.

@@ -23,7 +23,7 @@ h1 {
  * Game
  */
 
-.game-wrapper {
+.game-container {
   width: 620px;
   height: 100%;
   margin: 0 auto;
@@ -36,7 +36,7 @@ h1 {
   height: 400px;
   margin: 30px 0 10px 0;
   background-color: #fff;
-  border: 10px solid #000;
+  /*border: 10px solid #000;*/
 }
 
 .game-info-text {

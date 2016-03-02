@@ -4,7 +4,7 @@ import Snake.Model.Cell exposing (Cell)
 import Snake.Model.Snake exposing (Snake)
 import Snake.Model.World exposing (World)
 import Snake.Game as Game exposing (Game)
-import Snake.Config as Config
+import Snake.Config exposing (VisualConfig)
 import Snake.Utility as U
 import Array exposing (Array)
 import Color exposing (Color)
@@ -49,26 +49,29 @@ markSnakeHelper cs i acc =
 
 type alias ElementGrid = Array (Array Element)
 
-worldToElementGrid : World -> ElementGrid
-worldToElementGrid =
-    worldToMarkGrid >> Array.map (Array.map drawElement)
+worldToElementGrid : VisualConfig -> World -> ElementGrid
+worldToElementGrid config world =
+    world |> worldToMarkGrid |> Array.map (Array.map (drawElement config))
 
-drawElement : ElementMark -> Element
-drawElement mark =
+drawElement : VisualConfig -> ElementMark -> Element
+drawElement config mark =
     let
-        side = Config.cellSize
-        sq = C.square side
+        side = config.cellSize
+        sq = C.square (toFloat side)
         darken i = (sqrt (toFloat i)) / 8
-        --darken i = (toFloat i) / 20
+        bodyColor = colorFromRGB config.colorBody
         form = case mark of
             Empty ->
-                sq |> C.filled Config.colorBackground
+                sq |> C.filled (colorFromRGB config.colorBackground)
             Food ->
-                sq |> C.filled Config.colorFood
+                sq |> C.filled (colorFromRGB config.colorFood)
             Snake i ->
-                sq |> C.filled (darkenColor (darken i) Config.colorBody)
+                sq |> C.filled (darkenColor (darken i) bodyColor)
     in
         C.collage side side [form]
+
+colorFromRGB : (Int, Int, Int) -> Color
+colorFromRGB (r, g, b) = Color.rgb r g b
 
 darkenColor : Float -> Color -> Color
 darkenColor p color =
@@ -80,10 +83,10 @@ darkenColor p color =
 
 {- Compose Grid Elements -}
 
-worldToCompositeElement : World -> Element
-worldToCompositeElement world =
+worldToCompositeElement : VisualConfig -> World -> Element
+worldToCompositeElement config world =
     let
-        array = worldToElementGrid world
+        array = worldToElementGrid config world
         loopRow : Int -> Element -> Element
         loopRow i acc =
             if i == world.size.h then
@@ -99,18 +102,18 @@ worldToCompositeElement world =
 
 {- Game Canvas -}
 
-drawWorld : World -> Element
-drawWorld world =
+drawWorld : VisualConfig -> World -> Element
+drawWorld config world =
     let
-        worldElement = worldToCompositeElement world
+        worldElement = worldToCompositeElement config world
     in
         worldElement
         --E.flow E.down [worldElement, E.show world.gameScore, E.show world.snake.length, E.show world.food]
 
 {- Main view function -}
 
-view : Game -> Element
-view game = drawWorld game.world
+view : VisualConfig -> Game -> Element
+view config game = drawWorld config game.world
 
 {- Output game info -}
 

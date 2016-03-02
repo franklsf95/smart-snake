@@ -5,7 +5,7 @@ import Snake.Model.Food as Food
 import Snake.Model.Size exposing (Size)
 import Snake.Model.Snake as Snake exposing (Snake)
 import Snake.AI.Interface as AI
-import Snake.Config as Config
+import Snake.Config exposing (GameConfig)
 import Snake.Control as Control
 import Random
 
@@ -24,20 +24,20 @@ type alias World =
 
 {- World -}
 
-initialWorld : World
-initialWorld =
+initialWorld : GameConfig -> World
+initialWorld gameConfig =
     let
-        size = { w = Config.arenaWidth, h = Config.arenaHeight }
-        seed = Random.initialSeed Config.initialRandomSeed
+        size = { w = gameConfig.arenaWidth, h = gameConfig.arenaHeight }
+        seed = Random.initialSeed gameConfig.randomSeed
         gen = Food.randGen size.w size.h
         (food', seed') = Random.generate gen seed
     in
         { size = size
-        , snake = Snake.initialSnake Config.snakeInitialLength size
+        , snake = Snake.initialSnake gameConfig.snakeInitialLength size
         , food = food'
         , seed = seed'
         , gen = gen
         , commandHandled = False
         , auxiliaryState = AI.initialAuxilaryState
-        , gameScore = Config.scoreInitial
+        , gameScore = gameConfig.scoreInitial
         }

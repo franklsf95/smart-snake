@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Snake game implemented in Elm that can play automatically",
+    "summary": "Play the snake game or watch AI control the perfect snake.",
     "repository": "https://github.com/franklsf95/smart-snake.git",
     "license": "MIT",
     "source-directories": [

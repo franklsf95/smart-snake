@@ -3,7 +3,7 @@ module Snake.Game where
 import Snake.Model.World as World exposing (World)
 import Snake.Model.WorldAux as WorldAux
 import Snake.AI.Main as AIMain
-import Snake.Config as Config
+import Snake.Config exposing (GameConfig)
 import Snake.Control as Control
 import Snake.Utility as U
 import Signal
@@ -17,14 +17,16 @@ type alias Game =
     , state : GameState
     , aiMessage : String
     , lastMessage : String
+    , config : GameConfig
     }
 
-initialGame : Game
-initialGame =
-    { world = World.initialWorld
-    , state = Playing
+initialGame : GameConfig -> Game
+initialGame config =
+    { world = World.initialWorld config
+    , state = Start
     , aiMessage = ""
     , lastMessage = ""
+    , config = config
     }
 
 updateGame : Control.Input -> Game -> Game
@@ -33,20 +35,21 @@ updateGame input game =
         (_, Playing) ->
             let
                 lastMessage = game.aiMessage
-                (world', msg) = runAI game.world
+                (world', msg) = runAI game.config game.world
                 message' = if msg == "" then lastMessage else msg
-                world'' = WorldAux.updateWorld input world'
+                world'' = WorldAux.updateWorld game.config input world'
                 gameOver = WorldAux.isGameOver world''
                 state' = if gameOver then Dead else Playing
             in
-                { world = world''
-                , state = state'
-                , aiMessage = message'
-                , lastMessage = lastMessage
+                { game
+                    | world = world''
+                    , state = state'
+                    , aiMessage = message'
+                    , lastMessage = lastMessage
                 }
         (Control.Next, Start) ->
             { game
-                | world = World.initialWorld
+                | world = World.initialWorld game.config
                 , state = Playing
             }
         (Control.Next, Dead) ->
@@ -54,9 +57,9 @@ updateGame input game =
         _ ->
             game
 
-runAI : World -> (World, String)
-runAI world =
-    if Config.enableAI then
+runAI : GameConfig -> World -> (World, String)
+runAI gameConfig world =
+    if gameConfig.enableAI then
         let
             (input, state') = AIMain.next world
             m = if state'.lastStepRandom then " (Random)   " else "   "
@@ -74,5 +77,6 @@ runAI world =
 
 {- Output Game Signal -}
 
-gameSignal : Signal Game
-gameSignal = Signal.foldp updateGame initialGame Control.inputSignal
+gameSignal : GameConfig -> Signal Game
+gameSignal config =
+    Signal.foldp updateGame (initialGame config) (Control.inputSignal config)

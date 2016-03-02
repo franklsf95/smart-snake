@@ -8238,50 +8238,6 @@ Elm.Snake.Model.Size.make = function (_elm) {
    return _elm.Snake.Model.Size.values = {_op: _op,Size: Size};
 };
 Elm.Snake = Elm.Snake || {};
-Elm.Snake.Config = Elm.Snake.Config || {};
-Elm.Snake.Config.make = function (_elm) {
-   "use strict";
-   _elm.Snake = _elm.Snake || {};
-   _elm.Snake.Config = _elm.Snake.Config || {};
-   if (_elm.Snake.Config.values) return _elm.Snake.Config.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Color = Elm.Color.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
-   var _op = {};
-   var snakeInitialLength = 20;
-   var scoreMove = -1;
-   var scoreFood = 100;
-   var scoreInitial = scoreFood * snakeInitialLength;
-   var initialRandomSeed = 42;
-   var fps = 30;
-   var enableAI = true;
-   var colorFood = A3($Color.rgb,230,39,57);
-   var colorBody = A3($Color.rgb,110,211,207);
-   var colorBackground = A3($Color.rgb,62,56,64);
-   var cellSize = 20;
-   var arenaHeight = 20;
-   var arenaWidth = 30;
-   return _elm.Snake.Config.values = {_op: _op
-                                     ,arenaWidth: arenaWidth
-                                     ,arenaHeight: arenaHeight
-                                     ,cellSize: cellSize
-                                     ,colorBackground: colorBackground
-                                     ,colorBody: colorBody
-                                     ,colorFood: colorFood
-                                     ,enableAI: enableAI
-                                     ,fps: fps
-                                     ,initialRandomSeed: initialRandomSeed
-                                     ,scoreFood: scoreFood
-                                     ,scoreInitial: scoreInitial
-                                     ,scoreMove: scoreMove
-                                     ,snakeInitialLength: snakeInitialLength};
-};
-Elm.Snake = Elm.Snake || {};
 Elm.Snake.Utility = Elm.Snake.Utility || {};
 Elm.Snake.Utility.make = function (_elm) {
    "use strict";
@@ -8461,6 +8417,36 @@ Elm.Snake.Model.Food.make = function (_elm) {
    return _elm.Snake.Model.Food.values = {_op: _op,randGen: randGen};
 };
 Elm.Snake = Elm.Snake || {};
+Elm.Snake.Config = Elm.Snake.Config || {};
+Elm.Snake.Config.make = function (_elm) {
+   "use strict";
+   _elm.Snake = _elm.Snake || {};
+   _elm.Snake.Config = _elm.Snake.Config || {};
+   if (_elm.Snake.Config.values) return _elm.Snake.Config.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var defaultGameConfig = {arenaWidth: 30
+                           ,arenaHeight: 20
+                           ,enableAI: true
+                           ,fps: 30
+                           ,randomSeed: 42
+                           ,scoreFood: 100
+                           ,scoreInitial: 600
+                           ,scoreMove: -1
+                           ,snakeInitialLength: 6};
+   var VisualConfig = F4(function (a,b,c,d) {    return {cellSize: a,colorBackground: b,colorBody: c,colorFood: d};});
+   var GameConfig = F9(function (a,b,c,d,e,f,g,h,i) {
+      return {arenaWidth: a,arenaHeight: b,enableAI: c,fps: d,randomSeed: e,scoreFood: f,scoreInitial: g,scoreMove: h,snakeInitialLength: i};
+   });
+   return _elm.Snake.Config.values = {_op: _op,GameConfig: GameConfig,VisualConfig: VisualConfig,defaultGameConfig: defaultGameConfig};
+};
+Elm.Snake = Elm.Snake || {};
 Elm.Snake.Control = Elm.Snake.Control || {};
 Elm.Snake.Control.make = function (_elm) {
    "use strict";
@@ -8483,17 +8469,19 @@ Elm.Snake.Control.make = function (_elm) {
    var keySignal = F2(function (key,input) {
       return A2($Signal.map,function (_p0) {    return input;},A3($Signal.filter,$Basics.identity,false,$Keyboard.isDown(key)));
    });
-   var tickSignal = $Time.fps($Snake$Config.fps);
+   var tickSignal = function (gameConfig) {    return $Time.fps(gameConfig.fps);};
    var Null = {ctor: "Null"};
    var Next = {ctor: "Next"};
    var Command = function (a) {    return {ctor: "Command",_0: a};};
    var Tick = {ctor: "Tick"};
-   var inputSignal = $Signal.mergeMany(_U.list([A2($Signal.map,function (_p1) {    return Tick;},tickSignal)
-                                               ,A2(keySignal,32,Next)
-                                               ,A2(keySignal,37,Command($Snake$Model$Direction.Left))
-                                               ,A2(keySignal,38,Command($Snake$Model$Direction.Up))
-                                               ,A2(keySignal,39,Command($Snake$Model$Direction.Right))
-                                               ,A2(keySignal,40,Command($Snake$Model$Direction.Down))]));
+   var inputSignal = function (gameConfig) {
+      return $Signal.mergeMany(_U.list([A2($Signal.map,function (_p1) {    return Tick;},tickSignal(gameConfig))
+                                       ,A2(keySignal,32,Next)
+                                       ,A2(keySignal,37,Command($Snake$Model$Direction.Left))
+                                       ,A2(keySignal,38,Command($Snake$Model$Direction.Up))
+                                       ,A2(keySignal,39,Command($Snake$Model$Direction.Right))
+                                       ,A2(keySignal,40,Command($Snake$Model$Direction.Down))]));
+   };
    return _elm.Snake.Control.values = {_op: _op
                                       ,Tick: Tick
                                       ,Command: Command
@@ -8527,22 +8515,22 @@ Elm.Snake.Model.World.make = function (_elm) {
    $Snake$Model$Size = Elm.Snake.Model.Size.make(_elm),
    $Snake$Model$Snake = Elm.Snake.Model.Snake.make(_elm);
    var _op = {};
-   var initialWorld = function () {
-      var seed = $Random.initialSeed($Snake$Config.initialRandomSeed);
-      var size = {w: $Snake$Config.arenaWidth,h: $Snake$Config.arenaHeight};
+   var initialWorld = function (gameConfig) {
+      var seed = $Random.initialSeed(gameConfig.randomSeed);
+      var size = {w: gameConfig.arenaWidth,h: gameConfig.arenaHeight};
       var gen = A2($Snake$Model$Food.randGen,size.w,size.h);
       var _p0 = A2($Random.generate,gen,seed);
       var food$ = _p0._0;
       var seed$ = _p0._1;
       return {size: size
-             ,snake: A2($Snake$Model$Snake.initialSnake,$Snake$Config.snakeInitialLength,size)
+             ,snake: A2($Snake$Model$Snake.initialSnake,gameConfig.snakeInitialLength,size)
              ,food: food$
              ,seed: seed$
              ,gen: gen
              ,commandHandled: false
              ,auxiliaryState: $Snake$AI$Interface.initialAuxilaryState
-             ,gameScore: $Snake$Config.scoreInitial};
-   }();
+             ,gameScore: gameConfig.scoreInitial};
+   };
    var World = F8(function (a,b,c,d,e,f,g,h) {    return {size: a,snake: b,food: c,seed: d,gen: e,commandHandled: f,auxiliaryState: g,gameScore: h};});
    return _elm.Snake.Model.World.values = {_op: _op,World: World,initialWorld: initialWorld};
 };
@@ -8604,15 +8592,15 @@ Elm.Snake.Model.WorldAux.make = function (_elm) {
             return world;
          }
    });
-   var updateWorld = F2(function (input,world) {
+   var updateWorld = F3(function (gameConfig,input,world) {
       var _p6 = input;
       if (_p6.ctor === "Tick") {
             if (_U.eq($Snake$Model$Snake.nextBodyCell(world.snake),world.food)) {
-                  var scoreAdd = $Snake$Config.scoreFood + $Snake$Config.scoreMove;
+                  var scoreAdd = gameConfig.scoreFood + gameConfig.scoreMove;
                   var world$ = genFood(world);
                   return _U.update(world$,{snake: $Snake$Model$Snake.grow(world.snake),commandHandled: false,gameScore: world.gameScore + scoreAdd});
                } else return _U.update(world,
-               {snake: $Snake$Model$Snake.move(world.snake),commandHandled: false,gameScore: world.gameScore + $Snake$Config.scoreMove});
+               {snake: $Snake$Model$Snake.move(world.snake),commandHandled: false,gameScore: world.gameScore + gameConfig.scoreMove});
          } else {
             return A2(handleCommand,input,world);
          }
@@ -8644,6 +8632,7 @@ Elm.Snake.AI.Main.make = function (_elm) {
    $Set = Elm.Set.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Snake$AI$Interface = Elm.Snake.AI.Interface.make(_elm),
+   $Snake$Config = Elm.Snake.Config.make(_elm),
    $Snake$Control = Elm.Snake.Control.make(_elm),
    $Snake$Model$Cell = Elm.Snake.Model.Cell.make(_elm),
    $Snake$Model$Direction = Elm.Snake.Model.Direction.make(_elm),
@@ -8684,15 +8673,16 @@ Elm.Snake.AI.Main.make = function (_elm) {
       }
    });
    var willDie = F2(function (world,input) {
-      var world$ = A2($Snake$Model$WorldAux.updateWorld,input,world);
-      var world$$ = A2($Snake$Model$WorldAux.updateWorld,$Snake$Control.Tick,world$);
+      var update = $Snake$Model$WorldAux.updateWorld($Snake$Config.defaultGameConfig);
+      var world$ = A2(update,input,world);
+      var world$$ = A2(update,$Snake$Control.Tick,world$);
       var gameOver = $Snake$Model$WorldAux.isGameOver(world$$);
       return gameOver;
    });
    var nextCommand = F2(function (seed,commands) {
       var _p3 = commands;
       if (_p3.ctor === "[]") {
-            return _U.crashCase("Snake.AI.Main",{start: {line: 142,column: 5},end: {line: 153,column: 29}},_p3)("no possible command");
+            return _U.crashCase("Snake.AI.Main",{start: {line: 143,column: 5},end: {line: 154,column: 29}},_p3)("no possible command");
          } else {
             if (_p3._1.ctor === "[]") {
                   return {ctor: "_Tuple2",_0: _p3._0,_1: seed};
@@ -8848,8 +8838,8 @@ Elm.Snake.Game.make = function (_elm) {
    $Snake$Model$World = Elm.Snake.Model.World.make(_elm),
    $Snake$Model$WorldAux = Elm.Snake.Model.WorldAux.make(_elm);
    var _op = {};
-   var runAI = function (world) {
-      if ($Snake$Config.enableAI) {
+   var runAI = F2(function (gameConfig,world) {
+      if (gameConfig.enableAI) {
             var lastTurn = $Basics.toString(world.auxiliaryState.lastTurn);
             var _p0 = $Snake$AI$Main.next(world);
             var input = _p0._0;
@@ -8859,28 +8849,28 @@ Elm.Snake.Game.make = function (_elm) {
             var world$ = _U.update(world,{auxiliaryState: state$});
             return {ctor: "_Tuple2",_0: A2($Snake$Model$WorldAux.handleCommand,input,world$),_1: message};
          } else return {ctor: "_Tuple2",_0: world,_1: ""};
-   };
-   var Game = F4(function (a,b,c,d) {    return {world: a,state: b,aiMessage: c,lastMessage: d};});
+   });
+   var Game = F5(function (a,b,c,d,e) {    return {world: a,state: b,aiMessage: c,lastMessage: d,config: e};});
    var Dead = {ctor: "Dead"};
    var Playing = {ctor: "Playing"};
-   var initialGame = {world: $Snake$Model$World.initialWorld,state: Playing,aiMessage: "",lastMessage: ""};
    var Start = {ctor: "Start"};
+   var initialGame = function (config) {    return {world: $Snake$Model$World.initialWorld(config),state: Start,aiMessage: "",lastMessage: "",config: config};};
    var updateGame = F2(function (input,game) {
       var _p1 = {ctor: "_Tuple2",_0: input,_1: game.state};
       _v0_3: do {
          if (_p1.ctor === "_Tuple2") {
                switch (_p1._1.ctor)
-               {case "Playing": var _p2 = runAI(game.world);
+               {case "Playing": var _p2 = A2(runAI,game.config,game.world);
                     var world$ = _p2._0;
                     var msg = _p2._1;
-                    var world$$ = A2($Snake$Model$WorldAux.updateWorld,input,world$);
+                    var world$$ = A3($Snake$Model$WorldAux.updateWorld,game.config,input,world$);
                     var gameOver = $Snake$Model$WorldAux.isGameOver(world$$);
                     var state$ = gameOver ? Dead : Playing;
                     var lastMessage = game.aiMessage;
                     var message$ = _U.eq(msg,"") ? lastMessage : msg;
-                    return {world: world$$,state: state$,aiMessage: message$,lastMessage: lastMessage};
+                    return _U.update(game,{world: world$$,state: state$,aiMessage: message$,lastMessage: lastMessage});
                   case "Start": if (_p1._0.ctor === "Next") {
-                          return _U.update(game,{world: $Snake$Model$World.initialWorld,state: Playing});
+                          return _U.update(game,{world: $Snake$Model$World.initialWorld(game.config),state: Playing});
                        } else {
                           break _v0_3;
                        }
@@ -8895,7 +8885,7 @@ Elm.Snake.Game.make = function (_elm) {
       } while (false);
       return game;
    });
-   var gameSignal = A3($Signal.foldp,updateGame,initialGame,$Snake$Control.inputSignal);
+   var gameSignal = function (config) {    return A3($Signal.foldp,updateGame,initialGame(config),$Snake$Control.inputSignal(config));};
    return _elm.Snake.Game.values = {_op: _op
                                    ,Start: Start
                                    ,Playing: Playing
@@ -8941,37 +8931,39 @@ Elm.Snake.Visual.make = function (_elm) {
       var c = $Color.toRgb(color);
       return A3($Color.rgb,f(c.red),f(c.green),f(c.blue));
    });
-   var drawElement = function (mark) {
+   var colorFromRGB = function (_p0) {    var _p1 = _p0;return A3($Color.rgb,_p1._0,_p1._1,_p1._2);};
+   var drawElement = F2(function (config,mark) {
+      var bodyColor = colorFromRGB(config.colorBody);
       var darken = function (i) {    return $Basics.sqrt($Basics.toFloat(i)) / 8;};
-      var side = $Snake$Config.cellSize;
-      var sq = $Graphics$Collage.square(side);
+      var side = config.cellSize;
+      var sq = $Graphics$Collage.square($Basics.toFloat(side));
       var form = function () {
-         var _p0 = mark;
-         switch (_p0.ctor)
-         {case "Empty": return A2($Graphics$Collage.filled,$Snake$Config.colorBackground,sq);
-            case "Food": return A2($Graphics$Collage.filled,$Snake$Config.colorFood,sq);
-            default: return A2($Graphics$Collage.filled,A2(darkenColor,darken(_p0._0),$Snake$Config.colorBody),sq);}
+         var _p2 = mark;
+         switch (_p2.ctor)
+         {case "Empty": return A2($Graphics$Collage.filled,colorFromRGB(config.colorBackground),sq);
+            case "Food": return A2($Graphics$Collage.filled,colorFromRGB(config.colorFood),sq);
+            default: return A2($Graphics$Collage.filled,A2(darkenColor,darken(_p2._0),bodyColor),sq);}
       }();
       return A3($Graphics$Collage.collage,side,side,_U.list([form]));
-   };
+   });
    var Snake = function (a) {    return {ctor: "Snake",_0: a};};
    var markSnakeHelper = F3(function (cs,i,acc) {
       markSnakeHelper: while (true) {
-         var _p1 = cs;
-         if (_p1.ctor === "[]") {
+         var _p3 = cs;
+         if (_p3.ctor === "[]") {
                return acc;
             } else {
-               var _v2 = _p1._1,_v3 = i + 1,_v4 = A4($Snake$Utility.set,_p1._0._1,_p1._0._0,Snake(i),acc);
-               cs = _v2;
-               i = _v3;
-               acc = _v4;
+               var _v3 = _p3._1,_v4 = i + 1,_v5 = A4($Snake$Utility.set,_p3._0._1,_p3._0._0,Snake(i),acc);
+               cs = _v3;
+               i = _v4;
+               acc = _v5;
                continue markSnakeHelper;
             }
       }
    });
    var markSnake = F2(function (snake,array) {    return A3(markSnakeHelper,snake.body,0,array);});
    var Food = {ctor: "Food"};
-   var markFood = F2(function (_p2,array) {    var _p3 = _p2;return A4($Snake$Utility.set,_p3._1,_p3._0,Food,array);});
+   var markFood = F2(function (_p4,array) {    var _p5 = _p4;return A4($Snake$Utility.set,_p5._1,_p5._0,Food,array);});
    var Empty = {ctor: "Empty"};
    var worldToMarkGrid = function (world) {
       var h = world.size.h;
@@ -8979,23 +8971,23 @@ Elm.Snake.Visual.make = function (_elm) {
       var array = A2($Array.repeat,h,A2($Array.repeat,w,Empty));
       return A2(markSnake,world.snake,A2(markFood,world.food,array));
    };
-   var worldToElementGrid = function (_p4) {    return A2($Array.map,$Array.map(drawElement),worldToMarkGrid(_p4));};
-   var worldToCompositeElement = function (world) {
-      var array = worldToElementGrid(world);
+   var worldToElementGrid = F2(function (config,world) {    return A2($Array.map,$Array.map(drawElement(config)),worldToMarkGrid(world));});
+   var worldToCompositeElement = F2(function (config,world) {
+      var array = A2(worldToElementGrid,config,world);
       var loopRow = F2(function (i,acc) {
          loopRow: while (true) if (_U.eq(i,world.size.h)) return acc; else {
                var rowArray = A2($Snake$Utility.unmaybe,"no such row",A2($Array.get,i,array));
                var newRow = A2($Graphics$Element.flow,$Graphics$Element.right,$Array.toList(rowArray));
-               var _v6 = i + 1,_v7 = A2($Graphics$Element.below,acc,newRow);
-               i = _v6;
-               acc = _v7;
+               var _v7 = i + 1,_v8 = A2($Graphics$Element.below,acc,newRow);
+               i = _v7;
+               acc = _v8;
                continue loopRow;
             }
       });
       return A2(loopRow,0,$Graphics$Element.empty);
-   };
-   var drawWorld = function (world) {    var worldElement = worldToCompositeElement(world);return worldElement;};
-   var view = function (game) {    return drawWorld(game.world);};
+   });
+   var drawWorld = F2(function (config,world) {    var worldElement = A2(worldToCompositeElement,config,world);return worldElement;});
+   var view = F2(function (config,game) {    return A2(drawWorld,config,game.world);});
    return _elm.Snake.Visual.values = {_op: _op
                                      ,Empty: Empty
                                      ,Food: Food
@@ -9006,6 +8998,7 @@ Elm.Snake.Visual.make = function (_elm) {
                                      ,markSnakeHelper: markSnakeHelper
                                      ,worldToElementGrid: worldToElementGrid
                                      ,drawElement: drawElement
+                                     ,colorFromRGB: colorFromRGB
                                      ,darkenColor: darkenColor
                                      ,worldToCompositeElement: worldToCompositeElement
                                      ,drawWorld: drawWorld
@@ -9028,14 +9021,72 @@ Elm.Snake.Main.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Snake$Config = Elm.Snake.Config.make(_elm),
    $Snake$Game = Elm.Snake.Game.make(_elm),
    $Snake$Visual = Elm.Snake.Visual.make(_elm);
    var _op = {};
+   var visualConfig = Elm.Native.Port.make(_elm).inbound("visualConfig",
+   "Snake.Config.VisualConfig",
+   function (v) {
+      return typeof v === "object" && "cellSize" in v && "colorBackground" in v && "colorBody" in v && "colorFood" in v ? {_: {}
+                                                                                                                          ,cellSize: typeof v.cellSize === "number" && isFinite(v.cellSize) && Math.floor(v.cellSize) === v.cellSize ? v.cellSize : _U.badPort("an integer",
+                                                                                                                          v.cellSize)
+                                                                                                                          ,colorBackground: typeof v.colorBackground === "object" && v.colorBackground instanceof Array ? {ctor: "_Tuple3"
+                                                                                                                                                                                                                          ,_0: typeof v.colorBackground[0] === "number" && isFinite(v.colorBackground[0]) && Math.floor(v.colorBackground[0]) === v.colorBackground[0] ? v.colorBackground[0] : _U.badPort("an integer",
+                                                                                                                                                                                                                          v.colorBackground[0])
+                                                                                                                                                                                                                          ,_1: typeof v.colorBackground[1] === "number" && isFinite(v.colorBackground[1]) && Math.floor(v.colorBackground[1]) === v.colorBackground[1] ? v.colorBackground[1] : _U.badPort("an integer",
+                                                                                                                                                                                                                          v.colorBackground[1])
+                                                                                                                                                                                                                          ,_2: typeof v.colorBackground[2] === "number" && isFinite(v.colorBackground[2]) && Math.floor(v.colorBackground[2]) === v.colorBackground[2] ? v.colorBackground[2] : _U.badPort("an integer",
+                                                                                                                                                                                                                          v.colorBackground[2])} : _U.badPort("an array",
+                                                                                                                          v.colorBackground)
+                                                                                                                          ,colorBody: typeof v.colorBody === "object" && v.colorBody instanceof Array ? {ctor: "_Tuple3"
+                                                                                                                                                                                                        ,_0: typeof v.colorBody[0] === "number" && isFinite(v.colorBody[0]) && Math.floor(v.colorBody[0]) === v.colorBody[0] ? v.colorBody[0] : _U.badPort("an integer",
+                                                                                                                                                                                                        v.colorBody[0])
+                                                                                                                                                                                                        ,_1: typeof v.colorBody[1] === "number" && isFinite(v.colorBody[1]) && Math.floor(v.colorBody[1]) === v.colorBody[1] ? v.colorBody[1] : _U.badPort("an integer",
+                                                                                                                                                                                                        v.colorBody[1])
+                                                                                                                                                                                                        ,_2: typeof v.colorBody[2] === "number" && isFinite(v.colorBody[2]) && Math.floor(v.colorBody[2]) === v.colorBody[2] ? v.colorBody[2] : _U.badPort("an integer",
+                                                                                                                                                                                                        v.colorBody[2])} : _U.badPort("an array",
+                                                                                                                          v.colorBody)
+                                                                                                                          ,colorFood: typeof v.colorFood === "object" && v.colorFood instanceof Array ? {ctor: "_Tuple3"
+                                                                                                                                                                                                        ,_0: typeof v.colorFood[0] === "number" && isFinite(v.colorFood[0]) && Math.floor(v.colorFood[0]) === v.colorFood[0] ? v.colorFood[0] : _U.badPort("an integer",
+                                                                                                                                                                                                        v.colorFood[0])
+                                                                                                                                                                                                        ,_1: typeof v.colorFood[1] === "number" && isFinite(v.colorFood[1]) && Math.floor(v.colorFood[1]) === v.colorFood[1] ? v.colorFood[1] : _U.badPort("an integer",
+                                                                                                                                                                                                        v.colorFood[1])
+                                                                                                                                                                                                        ,_2: typeof v.colorFood[2] === "number" && isFinite(v.colorFood[2]) && Math.floor(v.colorFood[2]) === v.colorFood[2] ? v.colorFood[2] : _U.badPort("an integer",
+                                                                                                                                                                                                        v.colorFood[2])} : _U.badPort("an array",
+                                                                                                                          v.colorFood)} : _U.badPort("an object with fields `cellSize`, `colorBackground`, `colorBody`, `colorFood`",
+      v);
+   });
+   var gameConfig = Elm.Native.Port.make(_elm).inbound("gameConfig",
+   "Snake.Config.GameConfig",
+   function (v) {
+      return typeof v === "object" && "arenaWidth" in v && "arenaHeight" in v && "enableAI" in v && "fps" in v && "randomSeed" in v && "scoreFood" in v && "scoreInitial" in v && "scoreMove" in v && "snakeInitialLength" in v ? {_: {}
+                                                                                                                                                                                                                                  ,arenaWidth: typeof v.arenaWidth === "number" && isFinite(v.arenaWidth) && Math.floor(v.arenaWidth) === v.arenaWidth ? v.arenaWidth : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.arenaWidth)
+                                                                                                                                                                                                                                  ,arenaHeight: typeof v.arenaHeight === "number" && isFinite(v.arenaHeight) && Math.floor(v.arenaHeight) === v.arenaHeight ? v.arenaHeight : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.arenaHeight)
+                                                                                                                                                                                                                                  ,enableAI: typeof v.enableAI === "boolean" ? v.enableAI : _U.badPort("a boolean (true or false)",
+                                                                                                                                                                                                                                  v.enableAI)
+                                                                                                                                                                                                                                  ,fps: typeof v.fps === "number" && isFinite(v.fps) && Math.floor(v.fps) === v.fps ? v.fps : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.fps)
+                                                                                                                                                                                                                                  ,randomSeed: typeof v.randomSeed === "number" && isFinite(v.randomSeed) && Math.floor(v.randomSeed) === v.randomSeed ? v.randomSeed : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.randomSeed)
+                                                                                                                                                                                                                                  ,scoreFood: typeof v.scoreFood === "number" && isFinite(v.scoreFood) && Math.floor(v.scoreFood) === v.scoreFood ? v.scoreFood : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.scoreFood)
+                                                                                                                                                                                                                                  ,scoreInitial: typeof v.scoreInitial === "number" && isFinite(v.scoreInitial) && Math.floor(v.scoreInitial) === v.scoreInitial ? v.scoreInitial : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.scoreInitial)
+                                                                                                                                                                                                                                  ,scoreMove: typeof v.scoreMove === "number" && isFinite(v.scoreMove) && Math.floor(v.scoreMove) === v.scoreMove ? v.scoreMove : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.scoreMove)
+                                                                                                                                                                                                                                  ,snakeInitialLength: typeof v.snakeInitialLength === "number" && isFinite(v.snakeInitialLength) && Math.floor(v.snakeInitialLength) === v.snakeInitialLength ? v.snakeInitialLength : _U.badPort("an integer",
+                                                                                                                                                                                                                                  v.snakeInitialLength)} : _U.badPort("an object with fields `arenaWidth`, `arenaHeight`, `enableAI`, `fps`, `randomSeed`, `scoreFood`, `scoreInitial`, `scoreMove`, `snakeInitialLength`",
+      v);
+   });
+   var gameSignal = $Snake$Game.gameSignal(gameConfig);
+   var main = A2($Signal.map,$Snake$Visual.view(visualConfig),gameSignal);
    var info = Elm.Native.Port.make(_elm).outboundSignal("info",
    function (v) {
       return {state: v.state,snakeLength: v.snakeLength,score: v.score,aiMessage: v.aiMessage};
    },
-   A2($Signal.map,$Snake$Visual.outputInfo,$Snake$Game.gameSignal));
-   var main = A2($Signal.map,$Snake$Visual.view,$Snake$Game.gameSignal);
-   return _elm.Snake.Main.values = {_op: _op,main: main};
+   A2($Signal.map,$Snake$Visual.outputInfo,gameSignal));
+   return _elm.Snake.Main.values = {_op: _op,gameSignal: gameSignal,main: main};
 };

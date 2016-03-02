@@ -1,43 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="">
 <meta name="author" content="">
 
+<link href="assets/css/bootstrap.min.css" rel="stylesheet">
 <link href="assets/css/app.css" rel="stylesheet">
-<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
 
 <title>Smart Snake</title>
-
 </head>
 
 <body>
+<div class="container">
 
-<div class="game-wrapper">
+  <div class="game-container">
+    <h1>Smart Snake</h1>
 
-  <h1>Smart Snake</h1>
-
-  <div class="game-main"></div>
-  <div class="score-wrapper game-info-text left">
-    Score:
-    <span class="game-info-digit" id="game-score"></span>
-  </div>
-  <div class="score-wrapper game-info-text right">
-    Snake Length:
-    <span class="game-info-digit" id="game-snake-length"></span>
-  </div>
-  <div class="spacer"></div>
-  <div class="message-wrapper">
-    <div id="game-message"></div>
-    <div id="game-ai-message"></div>
+    <div class="game-main"></div>
+    <div class="score-wrapper game-info-text left">
+      Score:
+      <span class="game-info-digit" id="game-score"></span>
+    </div>
+    <div class="score-wrapper game-info-text right">
+      Snake Length:
+      <span class="game-info-digit" id="game-snake-length"></span>
+    </div>
+    <div class="spacer"></div>
+    <div class="message-wrapper">
+      <div id="game-message"></div>
+      <div id="game-ai-message"></div>
+    </div>
   </div>
 
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
 <script src="game.js"></script>
 <script src="assets/js/app.js"></script>
 

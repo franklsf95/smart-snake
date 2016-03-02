@@ -1,5 +1,6 @@
 -- AI Smart
 module Snake.AI.Interface where
+
 import Snake.Model.Direction exposing (Direction(..))
 import Random
 

@@ -7,6 +7,7 @@ import Snake.Model.World as World exposing (World)
 import Snake.Model.Direction as Direction exposing (Direction(..))
 import Snake.Model.WorldAux as WorldAux
 import Snake.AI.Interface exposing (AIState)
+import Snake.Config as Config
 import Snake.Control as Control exposing (Input (..))
 import Snake.Utility as U
 import Random
@@ -167,8 +168,9 @@ evaluateCommand world input =
 willDie : World -> Input -> Bool
 willDie world input =
     let
-        world' = WorldAux.updateWorld input world
-        world'' = WorldAux.updateWorld Tick world'
+        update = WorldAux.updateWorld Config.defaultGameConfig
+        world' = update input world
+        world'' = update Tick world'
         gameOver = WorldAux.isGameOver world''
     in
         gameOver
