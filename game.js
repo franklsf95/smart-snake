@@ -8476,12 +8476,13 @@ Elm.Snake.Control.make = function (_elm) {
    var inputFromExternal = function (i) {
       var _p1 = i;
       switch (_p1)
-      {case 0: return Null;
+      {case -1: return Next;
+         case 0: return Null;
          case 1: return Command($Snake$Model$Direction.Up);
          case 2: return Command($Snake$Model$Direction.Right);
          case 3: return Command($Snake$Model$Direction.Down);
          case 4: return Command($Snake$Model$Direction.Left);
-         default: return _U.crashCase("Snake.Control",{start: {line: 38,column: 5},end: {line: 44,column: 41}},_p1)("Unknown input");}
+         default: return _U.crashCase("Snake.Control",{start: {line: 38,column: 5},end: {line: 45,column: 41}},_p1)("Unknown input");}
    };
    var Tick = {ctor: "Tick"};
    var inputSignal = F2(function (gameConfig,extInput) {

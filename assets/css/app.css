@@ -33,13 +33,38 @@ h1 {
   margin-top: 30px;
 }
 
-.game-main {
-  display: block;
+.game-main-wrapper {
   width: 620px;
   height: 420px;
+}
+
+.game-main {
+  width: 620px;
+  height: 420px;
+  display: block;
   margin: 30px 0 10px 0;
   background-color: #fff;
   border: 10px solid #000;
+}
+
+.game-overlay {
+  position: absolute;
+  z-index: 98;
+  width: 600px;
+  height: 400px;
+  margin: 10px;
+  background-color: rgb(62, 56, 64);
+}
+
+.game-overlay-message {
+  position: absolute;
+  z-index: 99;
+  width: 600px;
+  margin: 140px 10px;
+  text-align: center;
+  color: #fbfafb;
+  font-size: 28px;
+  font-family: 'Courier', sans-serif;
 }
 
 .game-info-text {
@@ -75,8 +100,4 @@ h1 {
 
 .form-label {
   min-width: 160px;
-}
-
-a, a:link, a:hover, a:visited, a:active {
-  text-decoration: none;
 }

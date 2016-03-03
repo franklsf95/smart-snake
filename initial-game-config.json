@@ -9,12 +9,13 @@
         "scoreFood": 100,
         "scoreInitial": 2000,
         "scoreMove": -1,
-        "snakeInitialLength": 6
+        "snakeInitialLength": 6,
+        "trueRandom": false
     },
     "visualConfig": {
         "cellSize": 40,
         "colorBackground": [62, 56, 64],
-        "colorBody": [34, 167, 240],
+        "colorBody": [54, 215, 183],
         "colorFood": [201, 55, 86]
     }
 }

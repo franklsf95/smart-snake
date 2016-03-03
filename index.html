@@ -20,7 +20,11 @@
   <div class="game-container col-center">
     <h1>Smart Snake</h1>
 
-    <div class="game-main"></div>
+    <div class="game-main-wrapper">
+      <div class="game-overlay" id="game-overlay"></div>
+      <div class="game-overlay-message" id="game-overlay-message"></div>
+      <div class="game-main" id="game-main"></div>
+    </div>
     <div class="score-wrapper game-info-text left">
       Score:
       <span class="game-info-digit" id="game-score"></span>
@@ -42,12 +46,12 @@
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="heading-game-config">
       <h4 class="panel-title">
-        <a role="button" data-toggle="collapse" data-parent="#accordion-game-config" href="#collapse-game-config" aria-expanded="true" aria-controls="collapse-game-config">
+        <a data-toggle="collapse" data-parent="#accordion-game-config" href="#collapse-game-config">
           Customize Game
         </a>
       </h4>
     </div>
-    <div id="collapse-game-config" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading-game-config">
+    <div id="collapse-game-config" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-game-config">
       <div class="panel-body">
         <form>
           <div class="form-group">

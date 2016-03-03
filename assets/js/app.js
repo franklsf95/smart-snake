@@ -8,12 +8,17 @@ var app = null;
 var currentConfig = {};
 var configPath = './initial-game-config.json';
 var enableJSAI = false;
+var trueRandom = true;
 
 var startApp = function() {
-    var el = $('.game-main')[0];
+    var el = $('#game-main')[0];
     // Dispose of old instance
     if (app != null) {
         app.dispose();
+    }
+    // New random seed
+    if (currentConfig.gameConfig.trueRandom) {
+        currentConfig.gameConfig.randomSeed = Date.now();
     }
     app = Elm.embed(Elm.Snake.Main, el, currentConfig);
 
@@ -23,20 +28,18 @@ var startApp = function() {
         var state = info.state;
         var message = 'Error: game state.';
         if (state === 'Start') {
-            message = 'Press SPACE to start. Use ARROWS to control.';
+            $('#game-overlay').css({opacity: 1});
+            message = 'Press SPACE to start. <br> Use ARROWS to control.';
         } else if (state === 'Playing') {
+            $('#game-overlay').css({opacity: 0});
             message = '';
         } else if (state === 'Dead') {
-            message = 'YOU ARE DEAD. Press SPACE to restart.'
+            $('#game-overlay').css({opacity: 0.5});
+            message = 'YOU ARE DEAD. <br> Press SPACE to restart.'
         }
-        $('#game-message').text(message);
+        $('#game-overlay-message').html(message);
         $('#game-ai-message').text(info.aiMessage);
     });
-
-    var f = function() {
-        app.ports.extInput.send(1);
-    }
-    setInterval(f, 200);
 
     if (enableJSAI) {
         app.ports.info.subscribe(function(state) {
