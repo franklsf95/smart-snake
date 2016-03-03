@@ -7,7 +7,7 @@
 <meta name="description" content="">
 <meta name="author" content="">
 
-<link href="assets/css/bootstrap.min.css" rel="stylesheet">
+<link href="assets/css/site.min.css" rel="stylesheet">
 <link href="assets/css/bootstrap-slider.min.css" rel="stylesheet">
 <link href="assets/css/app.css" rel="stylesheet">
 
@@ -21,7 +21,6 @@
     <h1>Smart Snake</h1>
 
     <div class="game-main"></div>
-    <div id="game-anchor"></div> <!-- anchor for placing the game element -->
     <div class="score-wrapper game-info-text left">
       Score:
       <span class="game-info-digit" id="game-score"></span>
@@ -39,7 +38,7 @@
   <div class="clearfix"></div>
   <div class="config-container col-center">
 
-  <div class="panel-group" id="accordion-game-config" role="tablist" aria-multiselectable="true">
+  <div class="panel-group panel-group-lists" id="accordion-game-config" role="tablist" aria-multiselectable="true">
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="heading-game-config">
       <h4 class="panel-title">
@@ -52,21 +51,21 @@
       <div class="panel-body">
         <form>
           <div class="form-group">
-            <label>Game Mode</label>
+            <label class="form-label">Game Mode</label>
             <div class="btn-group" data-toggle="buttons">
-              <label class="btn btn-primary active">
-                <input type="radio" name="options" id="option1" autocomplete="off" checked> Human
+              <label class="btn btn-default active">
+                <input type="radio" name="input-mode" id="input-mode-human" value="human" checked> Human
               </label>
-              <label class="btn btn-primary">
-                <input type="radio" name="options" id="option2" autocomplete="off"> Elm AI
+              <label class="btn btn-default">
+                <input type="radio" name="input-mode" id="input-mode-elm-ai" value="elm-ai"> Elm AI
               </label>
-              <label class="btn btn-primary">
-                <input type="radio" name="options" id="option3" autocomplete="off"> JavaScript AI
+              <label class="btn btn-default">
+                <input type="radio" name="input-mode" id="input-mode-js-ai" value="js-ai"> JavaScript AI
               </label>
             </div>
           </div>
           <div class="form-group">
-            <label>Game Speed</label>
+            <label class="form-label">Game Speed (fps)</label>
             <input id="input-game-fps" type="text">
           </div>
           <button type="button" class="btn btn-success btn-block" id="input-save-config">Customize</button>

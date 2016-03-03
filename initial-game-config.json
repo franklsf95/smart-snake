@@ -2,8 +2,8 @@
     "gameConfig": {
         "arenaWidth": 15,
         "arenaHeight": 10,
-        "enableAI": true,
-        "fps": 30,
+        "enableAI": false,
+        "fps": 10,
         "randomSeed": 42,
         "randomSeedForAI": 42,
         "scoreFood": 100,
@@ -14,7 +14,7 @@
     "visualConfig": {
         "cellSize": 40,
         "colorBackground": [62, 56, 64],
-        "colorBody": [110, 211, 207],
-        "colorFood": [230, 39, 57]
+        "colorBody": [34, 167, 240],
+        "colorFood": [201, 55, 86]
     }
 }

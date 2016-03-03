@@ -4,7 +4,7 @@ import Snake.Model.World as World exposing (World)
 import Snake.Model.WorldAux as WorldAux
 import Snake.AI.Main as AIMain
 import Snake.Config exposing (GameConfig)
-import Snake.Control as Control
+import Snake.Control as Control exposing (ExternalInput)
 import Snake.Utility as U
 import Signal
 
@@ -77,6 +77,7 @@ runAI gameConfig world =
 
 {- Output Game Signal -}
 
-gameSignal : GameConfig -> Signal Game
-gameSignal config =
-    Signal.foldp updateGame (initialGame config) (Control.inputSignal config)
+gameSignal : GameConfig -> Signal ExternalInput -> Signal Game
+gameSignal config extInput =
+    Signal.foldp updateGame (initialGame config)
+                            (Control.inputSignal config extInput)

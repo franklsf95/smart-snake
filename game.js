@@ -8473,15 +8473,26 @@ Elm.Snake.Control.make = function (_elm) {
    var Null = {ctor: "Null"};
    var Next = {ctor: "Next"};
    var Command = function (a) {    return {ctor: "Command",_0: a};};
+   var inputFromExternal = function (i) {
+      var _p1 = i;
+      switch (_p1)
+      {case 0: return Null;
+         case 1: return Command($Snake$Model$Direction.Up);
+         case 2: return Command($Snake$Model$Direction.Right);
+         case 3: return Command($Snake$Model$Direction.Down);
+         case 4: return Command($Snake$Model$Direction.Left);
+         default: return _U.crashCase("Snake.Control",{start: {line: 38,column: 5},end: {line: 44,column: 41}},_p1)("Unknown input");}
+   };
    var Tick = {ctor: "Tick"};
-   var inputSignal = function (gameConfig) {
-      return $Signal.mergeMany(_U.list([A2($Signal.map,function (_p1) {    return Tick;},tickSignal(gameConfig))
+   var inputSignal = F2(function (gameConfig,extInput) {
+      return $Signal.mergeMany(_U.list([A2($Signal.map,function (_p3) {    return Tick;},tickSignal(gameConfig))
+                                       ,A2($Signal.map,inputFromExternal,extInput)
                                        ,A2(keySignal,32,Next)
                                        ,A2(keySignal,37,Command($Snake$Model$Direction.Left))
                                        ,A2(keySignal,38,Command($Snake$Model$Direction.Up))
                                        ,A2(keySignal,39,Command($Snake$Model$Direction.Right))
                                        ,A2(keySignal,40,Command($Snake$Model$Direction.Down))]));
-   };
+   });
    return _elm.Snake.Control.values = {_op: _op
                                       ,Tick: Tick
                                       ,Command: Command
@@ -8489,7 +8500,8 @@ Elm.Snake.Control.make = function (_elm) {
                                       ,Null: Null
                                       ,tickSignal: tickSignal
                                       ,keySignal: keySignal
-                                      ,inputSignal: inputSignal};
+                                      ,inputSignal: inputSignal
+                                      ,inputFromExternal: inputFromExternal};
 };
 Elm.Snake = Elm.Snake || {};
 Elm.Snake.Model = Elm.Snake.Model || {};
@@ -8885,7 +8897,9 @@ Elm.Snake.Game.make = function (_elm) {
       } while (false);
       return game;
    });
-   var gameSignal = function (config) {    return A3($Signal.foldp,updateGame,initialGame(config),$Snake$Control.inputSignal(config));};
+   var gameSignal = F2(function (config,extInput) {
+      return A3($Signal.foldp,updateGame,initialGame(config),A2($Snake$Control.inputSignal,config,extInput));
+   });
    return _elm.Snake.Game.values = {_op: _op
                                    ,Start: Start
                                    ,Playing: Playing
@@ -9022,9 +9036,15 @@ Elm.Snake.Main.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Snake$Config = Elm.Snake.Config.make(_elm),
+   $Snake$Control = Elm.Snake.Control.make(_elm),
    $Snake$Game = Elm.Snake.Game.make(_elm),
    $Snake$Visual = Elm.Snake.Visual.make(_elm);
    var _op = {};
+   var extInput = Elm.Native.Port.make(_elm).inboundSignal("extInput",
+   "Snake.Control.ExternalInput",
+   function (v) {
+      return typeof v === "number" && isFinite(v) && Math.floor(v) === v ? v : _U.badPort("an integer",v);
+   });
    var visualConfig = Elm.Native.Port.make(_elm).inbound("visualConfig",
    "Snake.Config.VisualConfig",
    function (v) {
@@ -9081,7 +9101,7 @@ Elm.Snake.Main.make = function (_elm) {
                                                                                                                                                                                                                                   v.snakeInitialLength)} : _U.badPort("an object with fields `arenaWidth`, `arenaHeight`, `enableAI`, `fps`, `randomSeed`, `scoreFood`, `scoreInitial`, `scoreMove`, `snakeInitialLength`",
       v);
    });
-   var gameSignal = $Snake$Game.gameSignal(gameConfig);
+   var gameSignal = A2($Snake$Game.gameSignal,gameConfig,extInput);
    var main = A2($Signal.map,$Snake$Visual.view(visualConfig),gameSignal);
    var info = Elm.Native.Port.make(_elm).outboundSignal("info",
    function (v) {
