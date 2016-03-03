@@ -9,7 +9,7 @@
         "scoreFood": 100,
         "scoreInitial": 2000,
         "scoreMove": -1,
-        "snakeInitialLength": 20
+        "snakeInitialLength": 6
     },
     "visualConfig": {
         "cellSize": 40,

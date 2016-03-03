@@ -8,6 +8,7 @@
 <meta name="author" content="">
 
 <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+<link href="assets/css/bootstrap-slider.min.css" rel="stylesheet">
 <link href="assets/css/app.css" rel="stylesheet">
 
 <title>Smart Snake</title>
@@ -16,10 +17,11 @@
 <body>
 <div class="container">
 
-  <div class="game-container">
+  <div class="game-container col-center">
     <h1>Smart Snake</h1>
 
     <div class="game-main"></div>
+    <div id="game-anchor"></div> <!-- anchor for placing the game element -->
     <div class="score-wrapper game-info-text left">
       Score:
       <span class="game-info-digit" id="game-score"></span>
@@ -34,12 +36,54 @@
       <div id="game-ai-message"></div>
     </div>
   </div>
+  <div class="clearfix"></div>
+  <div class="config-container col-center">
+
+  <div class="panel-group" id="accordion-game-config" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="heading-game-config">
+      <h4 class="panel-title">
+        <a role="button" data-toggle="collapse" data-parent="#accordion-game-config" href="#collapse-game-config" aria-expanded="true" aria-controls="collapse-game-config">
+          Customize Game
+        </a>
+      </h4>
+    </div>
+    <div id="collapse-game-config" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading-game-config">
+      <div class="panel-body">
+        <form>
+          <div class="form-group">
+            <label>Game Mode</label>
+            <div class="btn-group" data-toggle="buttons">
+              <label class="btn btn-primary active">
+                <input type="radio" name="options" id="option1" autocomplete="off" checked> Human
+              </label>
+              <label class="btn btn-primary">
+                <input type="radio" name="options" id="option2" autocomplete="off"> Elm AI
+              </label>
+              <label class="btn btn-primary">
+                <input type="radio" name="options" id="option3" autocomplete="off"> JavaScript AI
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Game Speed</label>
+            <input id="input-game-fps" type="text">
+          </div>
+          <button type="button" class="btn btn-success btn-block" id="input-save-config">Customize</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
 
 </div>
 
+</div>
+
+<script src="game.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="assets/js/bootstrap.min.js"></script>
-<script src="game.js"></script>
+<script src="assets/js/bootstrap-slider.min.js"></script>
 <script src="assets/js/app.js"></script>
 
 </body>

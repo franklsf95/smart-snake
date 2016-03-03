@@ -10,9 +10,16 @@ body {
   font-size: 16px;
 }
 
+.col-center {
+  width: 620px;
+  height: 100%;
+  margin: 0 auto;
+}
+
 /*
  * Title
  */
+
 h1 {
   font-size: 36px;
   font-weight: 700;
@@ -24,9 +31,6 @@ h1 {
  */
 
 .game-container {
-  width: 620px;
-  height: 100%;
-  margin: 0 auto;
   margin-top: 30px;
 }
 
@@ -62,3 +66,14 @@ h1 {
   height: 10px;
 }
 
+/*
+ * Config
+ */
+
+.config-container {
+  margin-top: 40px;
+}
+
+.panel a, a:link, a:hover, a:visited, a:active {
+  text-decoration: none;
+}

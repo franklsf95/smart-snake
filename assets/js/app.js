@@ -1,12 +1,22 @@
 'use strict';
 
-var configPath = './initial-game-config.json';
+// ------------------------------------------------------------
+//   Elm interop
+// ------------------------------------------------------------
 
-$.getJSON(configPath, function(initialValues) {
+var currentApp = null;
+var currentConfig = {};
+var $anchor = $('#game-anchor');
+
+var startApp = function() {
     var el = $('.game-main')[0];
-    var snakeApp = Elm.embed(Elm.Snake.Main, el, initialValues);
+    // Dispose of old instance
+    if (currentApp != null) {
+        currentApp.dispose();
+    }
+    currentApp = Elm.embed(Elm.Snake.Main, el, currentConfig);
 
-    snakeApp.ports.info.subscribe(function(info) {
+    currentApp.ports.info.subscribe(function(info) {
         $('#game-score').text(info.score);
         $('#game-snake-length').text(info.snakeLength);
         var state = info.state;
@@ -21,4 +31,32 @@ $.getJSON(configPath, function(initialValues) {
         $('#game-message').text(message);
         $('#game-ai-message').text(info.aiMessage);
     });
+};
+
+// ------------------------------------------------------------
+//   Load Default Config and Initialize Game
+// ------------------------------------------------------------
+
+var configPath = './initial-game-config.json';
+
+$.getJSON(configPath, function(config) {
+    currentConfig = config;
+    startApp();
+});
+
+// ----------------------------------------
+//   Initialize Form Elements
+// ----------------------------------------
+
+$("#input-game-fps").slider({
+    'min': 1,
+    'max': 100,
+    'value': 30,
+    'tooltip_position': 'bottom'
+});
+
+$('#input-save-config').click(function() {
+    var fps = $("#input-game-fps").slider('getValue');
+    currentConfig.gameConfig.fps = fps;
+    startApp();
 });
