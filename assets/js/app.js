@@ -71,6 +71,18 @@ $('#input-game-fps').slider({
     'tooltip_position': 'bottom'
 });
 
+$('#input-mode-human').click(function() {
+    $('#input-game-fps').slider('setValue', 10);
+});
+
+$('#input-mode-elm-ai').click(function() {
+    $('#input-game-fps').slider('setValue', 60);
+});
+
+$('#input-mode-js-ai').click(function() {
+    $('#input-game-fps').slider('setValue', 60);
+});
+
 $('#input-save-config').click(function() {
     // Game Mode
     var mode = $('input:checked[name=input-mode]').val();
