@@ -8,7 +8,6 @@ var app = null;
 var currentConfig = {};
 var configPath = './initial-game-config.json';
 var enableJSAI = false;
-var trueRandom = true;
 
 var startApp = function() {
     var el = $('#game-main')[0];
@@ -98,6 +97,13 @@ $('#input-save-config').click(function() {
     // Game Speed
     var fps = $('#input-game-fps').slider('getValue');
     currentConfig.gameConfig.fps = fps;
+    // Game Randomness
+    var randomMode = $('input:checked[name=input-random]').val();
+    if (randomMode === 'random-yes') {
+        currentConfig.gameConfig.trueRandom = true;
+    } else if (randomMode == 'random-no') {
+        currentConfig.gameConfig.trueRandom = false;
+    }
     // Start Game
     startApp();
     // Collapse config panel
